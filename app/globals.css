@@ -79,14 +79,13 @@ body { font-family: var(--fb); background: var(--w); color: var(--k); overflow-x
 .btn-k:hover  { background:#1f2937; }
 
 /* ── Product Card ───────────────────────────── */
-.pcard { background:var(--w); cursor:pointer; position:relative; overflow:hidden; }
-.pcard-img { aspect-ratio:3/4; overflow:hidden; background:var(--g100); position:relative; }
-.pcard-img img { width:100%;height:100%;object-fit:cover;transition:transform .5s ease; }
-.pcard:hover .pcard-img img { transform:scale(1.05); }
-.pcard-badge { position:absolute;top:10px;left:10px;background:var(--g);color:var(--w);font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px; }
-.pcard-quick { position:absolute;bottom:-48px;left:0;right:0;background:var(--k);color:var(--w);text-align:center;padding:13px;font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:bottom .25s;cursor:pointer;border:none;width:100%; }
+.pcard { background:#fff; cursor:pointer; position:relative; overflow:hidden; }
+.pcard-img { aspect-ratio:3/4; overflow:hidden; background:#f5f5f5; position:relative; }
+.pcard-img img { width:100%;height:100%;object-fit:cover;transition:transform .55s ease; }
+.pcard:hover .pcard-img img { transform:scale(1.04); }
+.pcard-quick { position:absolute;bottom:-52px;left:0;right:0;background:#0a0a0a;color:#fff;text-align:center;padding:14px;font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;transition:bottom .22s ease;cursor:pointer;border:none;width:100%; }
 .pcard:hover .pcard-quick { bottom:0; }
-.pcard-body { padding:10px 2px 14px; }
+.pcard-body { padding:10px 0 16px; }
 
 /* ── Filter chips ───────────────────────────── */
 .fchip { padding:7px 16px;border:1.5px solid var(--g200);background:var(--w);color:var(--g600);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--fb);white-space:nowrap; }
@@ -94,9 +93,9 @@ body { font-family: var(--fb); background: var(--w); color: var(--k); overflow-x
 .fchip.on { background:var(--k);border-color:var(--k);color:var(--w); }
 
 /* ── Talle chips ────────────────────────────── */
-.tchip { min-width:36px;height:34px;padding:0 8px;border:1.5px solid var(--g200);background:var(--w);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:var(--fb); }
-.tchip:hover { border-color:var(--g); }
-.tchip.sel { background:var(--k);border-color:var(--k);color:var(--w); }
+.tchip { min-width:30px;height:26px;padding:0 7px;border:1px solid #d1d5db;background:transparent;color:#374151;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:var(--fb); }
+.tchip:hover { border-color:#0a0a0a;color:#0a0a0a; }
+.tchip.sel { background:#0a0a0a;border-color:#0a0a0a;color:#fff; }
 
 /* ── Carousel buttons ───────────────────────── */
 .cbtn { width:42px;height:42px;border-radius:50%;border:1.5px solid var(--g200);background:var(--w);color:var(--g800);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0; }
@@ -160,6 +159,7 @@ body { font-family: var(--fb); background: var(--w); color: var(--k); overflow-x
 @media (max-width:768px) {
   .dsk { display:none !important; }
   .g4  { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+  .pcard-img { aspect-ratio:1/1 !important; }
   .hh1 { font-size:clamp(44px,12vw,72px) !important; }
   .pm-inner { flex-direction:column !important; }
   .pm-gallery { flex: 0 0 auto !important; min-height:280px !important; height:280px !important; }
