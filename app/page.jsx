@@ -49,6 +49,8 @@ export default function StorePage() {
   const [toast,        setToast]        = useState(null);
   const [selected,     setSelected]     = useState(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   const catDdRef  = useRef(null);
   const catSecRef = useRef(null);
 
@@ -80,6 +82,13 @@ export default function StorePage() {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', fn);
     return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   useEffect(() => {
@@ -245,58 +254,88 @@ export default function StorePage() {
           <span style={{ fontSize:13,fontWeight:600,color:'#9ca3af' }}>{filtered.length} prendas</span>
         </div>
 
-        <div style={{ display:'flex',gap:28,alignItems:'flex-start' }}>
-
-          {/* ── SIDEBAR FILTROS ── */}
-          <aside className="cat-aside" style={{ width:200,flexShrink:0,position:'sticky',top:80,display:'flex',flexDirection:'column',gap:0 }}>
-
-            {/* Género */}
-            <div style={{ marginBottom:28 }}>
-              <p style={{ fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'.1em',textTransform:'uppercase',marginBottom:12 }}>Género</p>
-              <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
-                {[['todos','Todos'],['hombre','Hombre'],['mujer','Mujer'],['unisex','Unisex'],['niños','Niños']].map(([v,l]) => (
-                  <button key={v} onClick={() => setGenF(v)}
-                    style={{ textAlign:'left',padding:'8px 12px',border:'none',background:genF===v?'#0a0a0a':'transparent',color:genF===v?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:genF===v?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Divisor */}
-            <div style={{ height:1,background:'#f3f4f6',marginBottom:28 }}/>
-
-            {/* Categorías */}
-            <div>
-              <p style={{ fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'.1em',textTransform:'uppercase',marginBottom:12 }}>Categoría</p>
-              <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
-                <button onClick={() => setCatF('todos')}
-                  style={{ textAlign:'left',padding:'8px 12px',border:'none',background:catF==='todos'?'#0a0a0a':'transparent',color:catF==='todos'?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:catF==='todos'?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
-                  Todos
+        {/* ── FILTROS MOBILE: dos filas horizontales scrolleables ── */}
+        {isMobile && (
+          <div style={{ marginBottom:16,display:'flex',flexDirection:'column',gap:8 }}>
+            {/* Fila 1: Género */}
+            <div style={{ display:'flex',gap:6,overflowX:'auto',paddingBottom:4,WebkitOverflowScrolling:'touch' }}>
+              {[['todos','Todos'],['hombre','Hombre'],['mujer','Mujer'],['unisex','Unisex'],['niños','Niños']].map(([v,l]) => (
+                <button key={v} onClick={() => setGenF(v)} style={{ flexShrink:0,padding:'7px 14px',border:'none',background:genF===v?'#0a0a0a':'#f3f4f6',color:genF===v?'#fff':'#374151',cursor:'pointer',fontSize:13,fontWeight:genF===v?700:600,fontFamily:"var(--fb)",borderRadius:100,transition:'all .15s',whiteSpace:'nowrap' }}>
+                  {l}
                 </button>
-                {cats.map((c) => (
-                  <button key={c.id} onClick={() => setCatF(c.id)}
-                    style={{ textAlign:'left',padding:'8px 12px',border:'none',background:catF===c.id?'#0a0a0a':'transparent',color:catF===c.id?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:catF===c.id?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8 }}>
-                    <span>{c.label}</span>
-                    {catF===c.id && <span style={{ fontSize:10,background:'var(--g)',color:'#fff',borderRadius:100,padding:'1px 7px',fontWeight:700 }}>{filtered.length}</span>}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-
-            {/* Limpiar filtros */}
+            {/* Fila 2: Categorías */}
+            <div style={{ display:'flex',gap:6,overflowX:'auto',paddingBottom:4,WebkitOverflowScrolling:'touch' }}>
+              <button onClick={() => setCatF('todos')} style={{ flexShrink:0,padding:'7px 14px',border:'none',background:catF==='todos'?'#0a0a0a':'#f3f4f6',color:catF==='todos'?'#fff':'#374151',cursor:'pointer',fontSize:13,fontWeight:catF==='todos'?700:600,fontFamily:"var(--fb)",borderRadius:100,transition:'all .15s',whiteSpace:'nowrap' }}>
+                Todos
+              </button>
+              {cats.map((c) => (
+                <button key={c.id} onClick={() => setCatF(c.id)} style={{ flexShrink:0,padding:'7px 14px',border:'none',background:catF===c.id?'#0a0a0a':'#f3f4f6',color:catF===c.id?'#fff':'#374151',cursor:'pointer',fontSize:13,fontWeight:catF===c.id?700:600,fontFamily:"var(--fb)",borderRadius:100,transition:'all .15s',whiteSpace:'nowrap' }}>
+                  {c.icon} {c.label}
+                </button>
+              ))}
+            </div>
             {(catF !== 'todos' || genF !== 'todos') && (
-              <button onClick={() => { setCatF('todos'); setGenF('todos'); setSearch(''); }}
-                style={{ marginTop:20,width:'100%',padding:'8px',border:'1.5px solid #e5e7eb',background:'transparent',color:'#6b7280',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
+              <button onClick={() => { setCatF('todos'); setGenF('todos'); setSearch(''); }} style={{ alignSelf:'flex-start',padding:'6px 14px',border:'1.5px solid #e5e7eb',background:'transparent',color:'#6b7280',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:"var(--fb)",borderRadius:100 }}>
                 ✕ Limpiar filtros
               </button>
             )}
-          </aside>
+          </div>
+        )}
+
+        <div style={{ display:'flex',gap:28,alignItems:'flex-start' }}>
+
+          {/* ── SIDEBAR FILTROS DESKTOP ── */}
+          {!isMobile && (
+            <aside style={{ width:200,flexShrink:0,position:'sticky',top:80,display:'flex',flexDirection:'column',gap:0 }}>
+
+              {/* Género */}
+              <div style={{ marginBottom:28 }}>
+                <p style={{ fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'.1em',textTransform:'uppercase',marginBottom:12 }}>Género</p>
+                <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
+                  {[['todos','Todos'],['hombre','Hombre'],['mujer','Mujer'],['unisex','Unisex'],['niños','Niños']].map(([v,l]) => (
+                    <button key={v} onClick={() => setGenF(v)}
+                      style={{ textAlign:'left',padding:'8px 12px',border:'none',background:genF===v?'#0a0a0a':'transparent',color:genF===v?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:genF===v?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ height:1,background:'#f3f4f6',marginBottom:28 }}/>
+
+              {/* Categorías */}
+              <div>
+                <p style={{ fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'.1em',textTransform:'uppercase',marginBottom:12 }}>Categoría</p>
+                <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
+                  <button onClick={() => setCatF('todos')}
+                    style={{ textAlign:'left',padding:'8px 12px',border:'none',background:catF==='todos'?'#0a0a0a':'transparent',color:catF==='todos'?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:catF==='todos'?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
+                    Todos
+                  </button>
+                  {cats.map((c) => (
+                    <button key={c.id} onClick={() => setCatF(c.id)}
+                      style={{ textAlign:'left',padding:'8px 12px',border:'none',background:catF===c.id?'#0a0a0a':'transparent',color:catF===c.id?'#fff':'#374151',cursor:'pointer',fontSize:14,fontWeight:catF===c.id?700:400,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8 }}>
+                      <span>{c.label}</span>
+                      {catF===c.id && <span style={{ fontSize:10,background:'var(--g)',color:'#fff',borderRadius:100,padding:'1px 7px',fontWeight:700 }}>{filtered.length}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(catF !== 'todos' || genF !== 'todos') && (
+                <button onClick={() => { setCatF('todos'); setGenF('todos'); setSearch(''); }}
+                  style={{ marginTop:20,width:'100%',padding:'8px',border:'1.5px solid #e5e7eb',background:'transparent',color:'#6b7280',cursor:'pointer',fontSize:12,fontWeight:600,fontFamily:"var(--fb)",borderRadius:6,transition:'all .15s' }}>
+                  ✕ Limpiar filtros
+                </button>
+              )}
+            </aside>
+          )}
 
           {/* ── GRID PRODUCTOS ── */}
-          <div style={{ flex:1,minWidth:0 }}>
+          <div style={{ flex:1,minWidth:0,width:isMobile?'100%':undefined }}>
             {filtered.length > 0 ? (
-              <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:18 }}>
+              <div style={{ display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(200px,1fr))',gap:isMobile?12:18 }}>
                 {filtered.map((p, i) => (
                   <div key={p.id} className={`sr d${(i % 4) + 1}`}>
                     <ProductCard p={p} onAdd={addToCart} cats={cats} onOpen={setSelected} />

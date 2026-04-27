@@ -568,40 +568,46 @@ function ACfg() {
 
 // ── Admin Panel ───────────────────────────────────────────────
 export default function AdminPage() {
-  const [logged,   setLogged]   = useState(false);
-  const [sec,      setSec]      = useState('dashboard');
-  const [products, setProducts] = useState([]);
-  const [heros,    setHeros]    = useState([]);
-  const [cats,     setCats]     = useState(DCATS);
-  const [loading,  setLoading]  = useState(true);
-  const [toast,    setToast]    = useState(null);
+  const [logged,     setLogged]     = useState(false);
+  const [sec,        setSec]        = useState('dashboard');
+  const [products,   setProducts]   = useState([]);
+  const [heros,      setHeros]      = useState([]);
+  const [cats,       setCats]       = useState(DCATS);
+  const [loading,    setLoading]    = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [toast,      setToast]      = useState(null);
 
   const showToast = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); }, []);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const sb = getSupabaseClient();
       const [pr, hr, cr] = await Promise.all([
         sb.from('productos').select('*').order('created_at', { ascending:false }),
         sb.from('hero_slides').select('*').order('created_at', { ascending:false }),
-        sb.from('categorias').select('*').order('orden', { ascending:true }).then((r) => r.error ? { data:null } : r),
+        sb.from('categorias').select('*').order('orden', { ascending:true }),
       ]);
-      if (pr.data) setProducts(pr.data);
-      if (hr.data) setHeros(hr.data);
+      if (pr.error) throw new Error(pr.error.message);
+      if (pr.data)        setProducts(pr.data);
+      if (hr.data)        setHeros(hr.data);
       if (cr.data?.length) setCats(cr.data);
-    } catch (e) { console.error('admin fetchAll:', e); }
+    } catch (e) {
+      console.error('admin fetchAll:', e);
+      setFetchError(e.message || 'Error de conexión con Supabase');
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => { if (logged) fetchAll(); }, [logged, fetchAll]);
 
   const NAV = [
-    { id:'dashboard', n:'hm', label:'Dashboard'  },
-    { id:'productos',  n:'pk', label:'Productos'   },
-    { id:'categorias', n:'tg', label:'Categorías'  },
-    { id:'hero',       n:'im', label:'Hero Posters' },
-    { id:'cards',      n:'st', label:'Tarjetas'    },
+    { id:'dashboard',  n:'hm', label:'Dashboard'    },
+    { id:'productos',  n:'pk', label:'Productos'     },
+    { id:'categorias', n:'tg', label:'Categorías'    },
+    { id:'hero',       n:'im', label:'Hero Posters'  },
+    { id:'cards',      n:'st', label:'Tarjetas'      },
     { id:'config',     n:'sg', label:'Configuración' },
   ];
 
@@ -611,7 +617,7 @@ export default function AdminPage() {
     <div className="aw">
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
-      {/* Sidebar */}
+      {/* Sidebar — oculto en <1024px por CSS */}
       <aside className="asb">
         <div style={{ padding:'18px 14px 14px',borderBottom:'1px solid rgba(255,255,255,.07)' }}>
           <Image src="/logo.png" alt="FP" width={120} height={40} style={{ height:32,width:'auto',objectFit:'contain' }} />
@@ -632,24 +638,42 @@ export default function AdminPage() {
       </aside>
 
       {/* Main */}
-      {/* Mobile nav */}
-<div style={{display:'flex',gap:8,overflowX:'auto',padding:'12px 0 16px',marginBottom:8}}>
-  {NAV.map((n)=>(
-    <button key={n.id} onClick={()=>setSec(n.id)}
-      style={{padding:'8px 16px',border:'none',borderRadius:100,cursor:'pointer',whiteSpace:'nowrap',fontFamily:"var(--fb)",fontSize:13,fontWeight:600,background:sec===n.id?'#0a0a0a':'#f3f4f6',color:sec===n.id?'#fff':'#374151',flexShrink:0}}>
-      {n.label}
-    </button>
-  ))}
-</div>
-      {/* Mobile nav */}
-<div style={{display:'flex',gap:8,overflowX:'auto',padding:'12px 0 16px',marginBottom:8,borderBottom:'1px solid #e5e7eb'}}>
-  {NAV.map((n)=>(
-    <button key={n.id} onClick={()=>setSec(n.id)}
-      style={{padding:'8px 16px',border:'none',borderRadius:100,cursor:'pointer',whiteSpace:'nowrap',fontFamily:"var(--fb)",fontSize:13,fontWeight:600,background:sec===n.id?'#0a0a0a':'#f3f4f6',color:sec===n.id?'#fff':'#374151',flexShrink:0}}>
-      {n.label}
-    </button>
-  ))}
-</div>
+      <main className="amn">
+        {/* Nav horizontal de pills — visible siempre, único menú en mobile/tablet */}
+        <div style={{ display:'flex',gap:8,overflowX:'auto',padding:'0 0 16px',marginBottom:8,borderBottom:'1px solid #e5e7eb',WebkitOverflowScrolling:'touch' }}>
+          {NAV.map((n) => (
+            <button key={n.id} onClick={() => setSec(n.id)}
+              style={{ padding:'8px 16px',border:'none',borderRadius:100,cursor:'pointer',whiteSpace:'nowrap',fontFamily:"var(--fb)",fontSize:13,fontWeight:600,background:sec===n.id?'#0a0a0a':'#f3f4f6',color:sec===n.id?'#fff':'#374151',flexShrink:0,transition:'all .15s' }}>
+              {n.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Error de conexión */}
+        {fetchError && (
+          <div style={{ background:'#fef2f2',border:'1px solid #fecaca',borderRadius:8,padding:'14px 18px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12 }}>
+            <div>
+              <p style={{ fontSize:14,fontWeight:700,color:'#dc2626' }}>Sin conexión con Supabase</p>
+              <p style={{ fontSize:12,color:'#ef4444',marginTop:2 }}>{fetchError}</p>
+            </div>
+            <button onClick={fetchAll} className="btn-k" style={{ padding:'8px 16px',fontSize:12,flexShrink:0 }}>Reintentar</button>
+          </div>
+        )}
+
+        {/* Contenido de la sección activa */}
+        {loading ? (
+          <div style={{ display:'flex',alignItems:'center',justifyContent:'center',padding:'80px 0' }}><Spin g /></div>
+        ) : (
+          <>
+            {sec === 'dashboard'  && <ADash   products={products} heros={heros} cats={cats} />}
+            {sec === 'productos'  && <AProds  products={products} setProducts={setProducts} cats={cats} toast={showToast} refresh={fetchAll} />}
+            {sec === 'categorias' && <ACats   cats={cats} setCats={setCats} toast={showToast} refresh={fetchAll} />}
+            {sec === 'hero'       && <AHero   heros={heros} setHeros={setHeros} toast={showToast} refresh={fetchAll} />}
+            {sec === 'cards'      && <ACards  toast={showToast} />}
+            {sec === 'config'     && <ACfg />}
+          </>
+        )}
+      </main>
     </div>
   );
 }

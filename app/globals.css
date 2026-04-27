@@ -153,7 +153,7 @@ body { font-family: var(--fb); background: var(--w); color: var(--k); overflow-x
 .g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
 
 /* ── Responsive ─────────────────────────────── */
-@media (max-width:900px) {
+@media (max-width:1024px) {
   .asb { display:none !important; }
   .amn { margin-left:0 !important; padding:16px !important; }
 }
