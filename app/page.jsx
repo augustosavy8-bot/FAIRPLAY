@@ -9,7 +9,12 @@ import CartPanel     from '@/components/CartPanel';
 import BannerCards   from '@/components/BannerCards';
 import { Ic }        from '@/components/Icons';
 
-const FALLBACK_HERO = { url_archivo:'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80', titulo:'NUEVA COLECCIÓN', subtitulo:'Otoño 2025', activo:true };
+const FALLBACK_HERO   = { url_archivo:'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80', titulo:'NUEVA COLECCIÓN', subtitulo:'Otoño 2025', activo:true };
+const FALLBACK_TICKER = [
+  { id:'f1', texto:'NUEVA COLECCIÓN OTOÑO 2025' },
+  { id:'f2', texto:'ENVÍOS A TODO EL PAÍS'       },
+  { id:'f3', texto:'@FAIRPLAY_VIDADEPORTIVA'     },
+];
 const FALLBACK_CATS = [
   {id:'remeras',label:'Remeras',icon:'👕'},{id:'buzos',label:'Buzos',icon:'🧥'},
   {id:'pantalones',label:'Pantalones',icon:'👖'},{id:'camperas',label:'Camperas',icon:'🧤'},
@@ -38,6 +43,7 @@ export default function StorePage() {
   const [heros,        setHeros]        = useState([FALLBACK_HERO]);
   const [cats,         setCats]         = useState(FALLBACK_CATS);
   const [bannerCards,  setBannerCards]  = useState([]);
+  const [tickerItems,  setTickerItems]  = useState(FALLBACK_TICKER);
   const [cart,         setCart]         = useState([]);
   const [catF,         setCatF]         = useState('todos');
   const [genF,         setGenF]         = useState('todos');
@@ -61,16 +67,18 @@ export default function StorePage() {
     const load = async () => {
       try {
         const sb = getSupabaseClient();
-        const [pr, hr, cr, bc] = await Promise.all([
+        const [pr, hr, cr, bc, tk] = await Promise.all([
           sb.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }),
           sb.from('hero_slides').select('*').order('created_at', { ascending: false }),
           sb.from('categorias').select('*').order('orden', { ascending: true }),
           sb.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
+          sb.from('ticker_items').select('id,texto').eq('activo', true).order('orden', { ascending: true }),
         ]);
         if (pr.data?.length)  setProducts(pr.data);
         if (hr.data?.length)  setHeros(hr.data);
         if (cr.data?.length)  setCats(cr.data);
         if (bc.data?.length)  setBannerCards(bc.data);
+        if (tk.data?.length)  setTickerItems(tk.data);
       } catch (e) { console.error('load:', e); }
     };
     load();
@@ -128,12 +136,12 @@ export default function StorePage() {
         <div className="ticker-in">
           {[...Array(8)].map((_, i) => (
             <span key={i} style={{ display:'contents' }}>
-              <span className="t-item">NUEVA COLECCIÓN OTOÑO 2025</span>
-              <span className="t-item">·</span>
-              <span className="t-item">ENVÍOS A TODO EL PAÍS</span>
-              <span className="t-item">·</span>
-              <span className="t-item">@FAIRPLAY_VIDADEPORTIVA</span>
-              <span className="t-item">·</span>
+              {tickerItems.map((item) => (
+                <span key={item.id} style={{ display:'contents' }}>
+                  <span className="t-item">{item.texto}</span>
+                  <span className="t-item">·</span>
+                </span>
+              ))}
             </span>
           ))}
         </div>
