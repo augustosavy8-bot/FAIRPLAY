@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 import ProductCard   from '@/components/ProductCard';
 import ProductModal  from '@/components/ProductModal';
 import Carousel      from '@/components/Carousel';
@@ -58,11 +58,12 @@ export default function StorePage() {
   useEffect(() => {
     const load = async () => {
       try {
+        const sb = getSupabaseClient();
         const [pr, hr, cr, bc] = await Promise.all([
-          supabase.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }),
-          supabase.from('hero_slides').select('*').order('created_at', { ascending: false }),
-          supabase.from('categorias').select('*').order('orden', { ascending: true }),
-          supabase.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
+          sb.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }),
+          sb.from('hero_slides').select('*').order('created_at', { ascending: false }),
+          sb.from('categorias').select('*').order('orden', { ascending: true }),
+          sb.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
         ]);
         if (pr.data?.length)  setProducts(pr.data);
         if (hr.data?.length)  setHeros(hr.data);

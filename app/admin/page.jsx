@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { supabase, uploadImage } from '@/lib/supabase';
+import { supabase, getSupabaseClient, uploadImage } from '@/lib/supabase';
 import { Ic } from '@/components/Icons';
 import ImageUploader from '@/components/ImageUploader';
 
@@ -581,10 +581,11 @@ export default function AdminPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
+      const sb = getSupabaseClient();
       const [pr, hr, cr] = await Promise.all([
-        supabase.from('productos').select('*').order('created_at', { ascending:false }),
-        supabase.from('hero_slides').select('*').order('created_at', { ascending:false }),
-        supabase.from('categorias').select('*').order('orden', { ascending:true }).then((r) => r.error ? { data:null } : r),
+        sb.from('productos').select('*').order('created_at', { ascending:false }),
+        sb.from('hero_slides').select('*').order('created_at', { ascending:false }),
+        sb.from('categorias').select('*').order('orden', { ascending:true }).then((r) => r.error ? { data:null } : r),
       ]);
       if (pr.data) setProducts(pr.data);
       if (hr.data) setHeros(hr.data);
