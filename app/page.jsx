@@ -180,7 +180,21 @@ export default function StorePage() {
 
           <div style={{ display:'flex',gap:6,alignItems:'center',marginLeft:'auto' }}>
             {showSearch && (
-              <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)}
+              <input autoFocus value={search}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSearch(v);
+                  if (v.length > 1) {
+                    scrollCat();
+                    const lower = v.toLowerCase();
+                    const catMatch = cats.find((c) =>
+                      c.id.toLowerCase().startsWith(lower) || c.label.toLowerCase().startsWith(lower)
+                    );
+                    setCatF(catMatch ? catMatch.id : 'todos');
+                  } else if (!v) {
+                    setCatF('todos');
+                  }
+                }}
                 onBlur={() => { if (!search) setShowSearch(false); }}
                 placeholder="Buscar..."
                 style={{ width:170,padding:'5px 11px',border:`1px solid ${scrolled?'#e5e7eb':'rgba(255,255,255,.25)'}`,background:scrolled?'#f9fafb':'rgba(255,255,255,.1)',color:scrolled?'#0a0a0a':'#fff',fontSize:13,fontFamily:"var(--fb)",outline:'none',borderRadius:3 }}
