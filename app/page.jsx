@@ -123,6 +123,10 @@ export default function StorePage() {
 
   const featCats = Object.entries(byCat).filter(([, a]) => a.length > 0);
   const scrollCat = () => catSecRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const handleBannerFilter = useCallback((categoria) => {
+    if (categoria) setCatF(categoria);
+    catSecRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   // Hero dots
   const setActiveHero = (i) => setHeros((sl) => sl.map((x, j) => ({ ...x, activo: j === i })));
@@ -232,7 +236,7 @@ export default function StorePage() {
       </section>
 
       {/* ── BANNER CARDS BLOQUE 1 ── */}
-      <BannerCards cards={bannerCards.filter((c) => c.bloque === 1 || !c.bloque)} />
+      <BannerCards cards={bannerCards.filter((c) => c.bloque === 1 || !c.bloque)} onFilter={handleBannerFilter} />
 
       {/* ── CAROUSELES ── */}
       {catF === 'todos' && genF === 'todos' && featCats.length > 0 && (
@@ -253,7 +257,7 @@ export default function StorePage() {
       )}
 
       {/* ── BANNER CARDS BLOQUE 2 ── */}
-      <BannerCards cards={bannerCards.filter((c) => c.bloque === 2)} />
+      <BannerCards cards={bannerCards.filter((c) => c.bloque === 2)} onFilter={handleBannerFilter} />
 
       {/* ── CATÁLOGO ── */}
       <section ref={catSecRef} style={{ padding:'16px clamp(16px,4vw,48px) 80px',maxWidth:1400,margin:'0 auto' }}>
@@ -394,6 +398,12 @@ export default function StorePage() {
           <p style={{ fontSize:10,color:'rgba(255,255,255,.2)',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>© 2025 FAIR PLAY. TODOS LOS DERECHOS RESERVADOS.</p>
         </div>
       </footer>
+
+      {/* ── FLOATING WHATSAPP ── */}
+      <a href="https://wa.me/5493471510863" target="_blank" rel="noreferrer"
+        style={{ position:'fixed',bottom:90,right:22,zIndex:799,width:54,height:54,background:'#25D366',borderRadius:'50%',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 18px rgba(37,211,102,.45)',textDecoration:'none' }}>
+        <Ic n="wa" s={26} />
+      </a>
 
       {/* ── FLOATING CART ── */}
       {cart.length > 0 && !showCart && (

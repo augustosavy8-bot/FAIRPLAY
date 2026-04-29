@@ -152,6 +152,7 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
   const [showForm,       setShowForm]       = useState(false);
   const [editing,        setEditing]        = useState(null);
   const [saving,         setSaving]         = useState(false);
+  const [saveError,      setSaveError]      = useState(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError,     setPhotoError]     = useState(null);
   const EMPTY = { nombre:'',tipo:cats[0]?.id||'remeras',categoria:'hombre',talles_disponibles:[],imagen_url:'',fotos:[],descripcion:'',activo:true };
@@ -168,15 +169,21 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
   const togT     = (t) => setForm((f) => { const a = f.talles_disponibles || []; return { ...f, talles_disponibles: a.includes(t) ? a.filter((x) => x !== t) : [...a, t] }; });
 
   const save = async () => {
-    if (!form.nombre) return;
+    if (!form.nombre) { setSaveError('El nombre del producto es requerido'); return; }
     setSaving(true);
+    setSaveError(null);
     const row = { nombre:form.nombre, tipo:form.tipo, categoria:form.categoria, talles_disponibles:form.talles_disponibles, imagen_url:form.fotos?.length>0?form.fotos[0]:form.imagen_url, fotos:form.fotos||[], descripcion:form.descripcion||'', activo:form.activo!==false };
+    console.log('[AProds save] payload:', row, '| editing:', editing);
     if (editing) {
       const { error } = await supabase.from('productos').update(row).eq('id', editing);
-      if (!error) { await refresh(); toast('Producto actualizado'); setShowForm(false); }
+      console.log('[AProds save] update result:', { error });
+      if (error) { setSaveError(error.message); }
+      else { await refresh(); toast('Producto actualizado'); setShowForm(false); }
     } else {
-      const { error } = await supabase.from('productos').insert(row);
-      if (!error) { await refresh(); toast('Producto creado'); setShowForm(false); }
+      const { data, error } = await supabase.from('productos').insert(row).select().single();
+      console.log('[AProds save] insert result:', { data, error });
+      if (error) { setSaveError(error.message); }
+      else { await refresh(); toast('Producto creado'); setShowForm(false); }
     }
     setSaving(false);
   };
@@ -367,11 +374,19 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
                 </div>
               </div>
             </div>
-            <div style={{ padding:'14px 20px',borderTop:'1px solid #f3f4f6',display:'flex',gap:10,justifyContent:'flex-end',flexShrink:0 }}>
-              <button onClick={() => setShowForm(false)} style={{ padding:'9px 18px',border:'1px solid #e5e7eb',background:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,borderRadius:6,fontFamily:"var(--fb)" }}>Cancelar</button>
-              <button onClick={save} disabled={saving} className="btn-g" style={{ padding:'9px 22px',borderRadius:6 }}>
-                {saving ? <Spin /> : (editing ? 'Guardar cambios' : 'Crear producto')}
-              </button>
+            <div style={{ padding:'14px 20px',borderTop:'1px solid #f3f4f6',flexShrink:0 }}>
+              {saveError && (
+                <div style={{ background:'#fef2f2',border:'1px solid #fecaca',borderRadius:6,padding:'8px 12px',marginBottom:10,display:'flex',alignItems:'center',gap:8 }}>
+                  <span style={{ fontSize:12,color:'#dc2626',fontWeight:600,flex:1 }}>⚠ {saveError}</span>
+                  <button onClick={() => setSaveError(null)} style={{ background:'none',border:'none',color:'#dc2626',cursor:'pointer',fontSize:14,lineHeight:1 }}>✕</button>
+                </div>
+              )}
+              <div style={{ display:'flex',gap:10,justifyContent:'flex-end' }}>
+                <button onClick={() => { setShowForm(false); setSaveError(null); }} style={{ padding:'9px 18px',border:'1px solid #e5e7eb',background:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,borderRadius:6,fontFamily:"var(--fb)" }}>Cancelar</button>
+                <button onClick={save} disabled={saving} className="btn-g" style={{ padding:'9px 22px',borderRadius:6 }}>
+                  {saving ? <Spin /> : (editing ? 'Guardar cambios' : 'Crear producto')}
+                </button>
+              </div>
             </div>
           </div>
         </div>

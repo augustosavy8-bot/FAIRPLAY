@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 
-function PromoCard({ card }) {
+function PromoCard({ card, onFilter }) {
   const [hover, setHover] = useState(false);
   if (!card?.imagen_url) return null;
   return (
@@ -40,7 +40,10 @@ function PromoCard({ card }) {
           </p>
         )}
         {card.cta && (
-          <div style={{ display:'inline-flex',alignItems:'center',gap:6,background:'#fff',color:'#0a0a0a',fontFamily:"var(--fd)",fontSize:12,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',padding:'8px 18px' }}>
+          <div
+            onClick={() => onFilter && onFilter(card.categoria)}
+            style={{ display:'inline-flex',alignItems:'center',gap:6,background:'#fff',color:'#0a0a0a',fontFamily:"var(--fd)",fontSize:12,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',padding:'8px 18px' }}
+          >
             {card.cta} →
           </div>
         )}
@@ -49,7 +52,7 @@ function PromoCard({ card }) {
   );
 }
 
-export default function BannerCards({ cards }) {
+export default function BannerCards({ cards, onFilter }) {
   const visible = (cards || []).filter((c) => c.activo !== false && c.imagen_url);
   if (!visible.length) return null;
 
@@ -61,10 +64,10 @@ export default function BannerCards({ cards }) {
   if (visible.length === 3) return (
     <section className="sr" style={sectionStyle}>
       <div style={{ display:'grid',gridTemplateColumns:'1.4fr 1fr',gap:12,height:'clamp(400px,55vw,620px)' }}>
-        <PromoCard card={visible[0]} />
+        <PromoCard card={visible[0]} onFilter={onFilter} />
         <div style={{ display:'grid',gridTemplateRows:'1fr 1fr',gap:12 }}>
-          <PromoCard card={visible[1]} />
-          <PromoCard card={visible[2]} />
+          <PromoCard card={visible[1]} onFilter={onFilter} />
+          <PromoCard card={visible[2]} onFilter={onFilter} />
         </div>
       </div>
     </section>
@@ -74,7 +77,7 @@ export default function BannerCards({ cards }) {
     <section className="sr" style={sectionStyle}>
       <div style={{ display:'grid',gridTemplateColumns:visible.length===1?'1fr':'1fr 1fr',gap:12,height:'clamp(320px,45vw,520px)' }}>
         {visible.slice(0, 4).map((c, i) => (
-          <PromoCard key={c.id || i} card={c} />
+          <PromoCard key={c.id || i} card={c} onFilter={onFilter} />
         ))}
       </div>
     </section>
