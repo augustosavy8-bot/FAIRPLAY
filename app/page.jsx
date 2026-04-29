@@ -127,14 +127,16 @@ export default function StorePage() {
   const featCats = Object.entries(byCat).filter(([, a]) => a.length > 0);
   const scrollCat = () => {
     if (!catSecRef.current) return;
-    const top = catSecRef.current.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top, behavior: 'smooth' });
+    const yOffset = -80;
+    const y = catSecRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   };
   const handleBannerFilter = useCallback((categoria) => {
     if (categoria) setCatF(categoria);
     if (!catSecRef.current) return;
-    const top = catSecRef.current.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top, behavior: 'smooth' });
+    const yOffset = -80;
+    const y = catSecRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   }, []);
 
   // Hero dots
@@ -429,7 +431,16 @@ export default function StorePage() {
             <span style={{ color:'rgba(255,255,255,.15)' }}>·</span>
             <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '5493471510863'}`} target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,.4)',fontSize:11,fontWeight:700,textDecoration:'none',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>WHATSAPP</a>
           </div>
-          <p style={{ fontSize:10,color:'rgba(255,255,255,.2)',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>© 2025 FAIR PLAY. TODOS LOS DERECHOS RESERVADOS.</p>
+          <div style={{ display:'flex',alignItems:'center',gap:7 }}>
+            <p style={{ fontSize:10,color:'rgba(255,255,255,.2)',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>© 2025 FAIR PLAY.</p>
+            <span style={{ fontSize:10,color:'rgba(255,255,255,.15)',fontFamily:"var(--fd)" }}>by</span>
+            <Image
+              src="/LOGO_FOKO.png" alt="Foko" width={60} height={22}
+              style={{ height:22,width:'auto',filter:'grayscale(1) opacity(0.35)',transition:'filter .25s' }}
+              onMouseEnter={(e) => { e.currentTarget.style.filter = 'grayscale(1) opacity(0.7)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = 'grayscale(1) opacity(0.35)'; }}
+            />
+          </div>
         </div>
       </footer>
 

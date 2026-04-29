@@ -7,6 +7,7 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
   const [added,    setAdded]    = useState(false);
   const [shake,    setShake]    = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
+  const [zoomed,   setZoomed]   = useState(false);
   const touchStartX = useRef(null);
 
   const talles = Array.isArray(p.talles_disponibles) ? p.talles_disponibles : [];
@@ -16,10 +17,10 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
     : p.imagen_url ? [p.imagen_url] : [];
 
   useEffect(() => {
-    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    const fn = (e) => { if (e.key === 'Escape') { if (zoomed) setZoomed(false); else onClose(); } };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
-  }, [onClose]);
+  }, [onClose, zoomed]);
 
   const handleAdd = () => {
     if (talles.length > 0 && !talle) { setShake(true); setTimeout(() => setShake(false), 500); return; }
@@ -60,7 +61,8 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
                 <img
                   key={photoIdx}
                   src={fotos[photoIdx]} alt={p.nombre}
-                  style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',animation:'fadeIn .2s' }}
+                  onClick={() => setZoomed(true)}
+                  style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',animation:'fadeIn .2s',cursor:'zoom-in' }}
                   onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80'; }}
                 />
               ) : (
@@ -144,6 +146,25 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
           </div>
         </div>
       </div>
+      {/* ── ZOOM OVERLAY ── */}
+      {zoomed && fotos.length > 0 && (
+        <div
+          onClick={() => setZoomed(false)}
+          style={{ position:'fixed',inset:0,zIndex:9700,background:'rgba(0,0,0,.92)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn .18s',cursor:'zoom-out' }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setZoomed(false); }}
+            style={{ position:'absolute',top:16,right:16,width:40,height:40,background:'rgba(255,255,255,.12)',border:'none',color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'50%',zIndex:1 }}
+          >
+            <Ic n="x" s={18} />
+          </button>
+          <img
+            src={fotos[photoIdx]} alt={p.nombre}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth:'95vw',maxHeight:'95vh',objectFit:'contain',animation:'scaleIn .2s ease',cursor:'default' }}
+          />
+        </div>
+      )}
     </div>
   );
 }
