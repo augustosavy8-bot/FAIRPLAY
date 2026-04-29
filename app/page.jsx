@@ -435,7 +435,7 @@ export default function StorePage() {
             <span style={{ fontSize:12,color:'rgba(255,255,255,.4)',fontFamily:"var(--fd)",letterSpacing:'.08em' }}>© 2026 FAIR PLAY. TODOS LOS DERECHOS RESERVADOS.</span>
             <span style={{ color:'rgba(255,255,255,.2)' }}>·</span>
             <span style={{ fontSize:11,color:'rgba(255,255,255,.3)',fontFamily:"var(--fd)" }}>by</span>
-            <Image src="/LOGO_FOKO.png" alt="Foko" width={80} height={28} style={{ height:28,width:'auto',filter:'brightness(0) invert(1)',opacity:.5,verticalAlign:'middle',marginLeft:6 }} />
+            <Image src="/LOGO_FOKO.png" alt="Foko" width={80} height={24} style={{ height:24,width:'auto',filter:'brightness(0) invert(1) opacity(0.5)',mixBlendMode:'screen' }} />
           </div>
         </div>
       </footer>
