@@ -55,7 +55,9 @@ export default function StorePage() {
   const [toast,        setToast]        = useState(null);
   const [selected,     setSelected]     = useState(null);
 
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile,      setIsMobile]      = useState(false);
+  const [initLoading,   setInitLoading]   = useState(true);
+  const [showOverlay,   setShowOverlay]   = useState(true);
 
   const catDdRef  = useRef(null);
   const catSecRef = useRef(null);
@@ -80,6 +82,7 @@ export default function StorePage() {
         if (bc.data?.length)  setBannerCards(bc.data);
         if (tk.data?.length)  setTickerItems(tk.data);
       } catch (e) { console.error('load:', e); }
+      finally { setInitLoading(false); }
     };
     load();
   }, []);
@@ -122,10 +125,16 @@ export default function StorePage() {
   }, [products]);
 
   const featCats = Object.entries(byCat).filter(([, a]) => a.length > 0);
-  const scrollCat = () => catSecRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollCat = () => {
+    if (!catSecRef.current) return;
+    const top = catSecRef.current.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
   const handleBannerFilter = useCallback((categoria) => {
     if (categoria) setCatF(categoria);
-    catSecRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!catSecRef.current) return;
+    const top = catSecRef.current.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
   }, []);
 
   // Hero dots
@@ -134,6 +143,17 @@ export default function StorePage() {
   return (
     <div style={{ fontFamily:"var(--fb)",background:'#fff' }}>
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+
+      {/* ── LOADING SCREEN ── */}
+      {showOverlay && (
+        <div
+          onTransitionEnd={() => setShowOverlay(false)}
+          style={{ position:'fixed',inset:0,zIndex:9999,background:'#0a0a0a',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:28,opacity:initLoading?1:0,transition:'opacity .45s ease',pointerEvents:initLoading?'auto':'none' }}
+        >
+          <Image src="/logo.png" alt="Fair Play" width={180} height={60} style={{ height:60,width:'auto',objectFit:'contain' }} priority />
+          <div style={{ width:36,height:36,border:'3px solid rgba(22,163,74,.22)',borderTopColor:'#22c55e',borderRadius:'50%',animation:'spin .8s linear infinite' }} />
+        </div>
+      )}
 
       {/* ── TICKER ── */}
       <div className="ticker">
