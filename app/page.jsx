@@ -431,15 +431,11 @@ export default function StorePage() {
             <span style={{ color:'rgba(255,255,255,.15)' }}>·</span>
             <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '5493471510863'}`} target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,.4)',fontSize:11,fontWeight:700,textDecoration:'none',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>WHATSAPP</a>
           </div>
-          <div style={{ display:'flex',alignItems:'center',gap:7 }}>
-            <p style={{ fontSize:10,color:'rgba(255,255,255,.2)',fontFamily:"var(--fd)",letterSpacing:'.1em',textTransform:'uppercase' }}>© 2025 FAIR PLAY.</p>
-            <span style={{ fontSize:10,color:'rgba(255,255,255,.15)',fontFamily:"var(--fd)" }}>by</span>
-            <Image
-              src="/LOGO_FOKO.png" alt="Foko" width={60} height={22}
-              style={{ height:22,width:'auto',filter:'grayscale(1) opacity(0.35)',transition:'filter .25s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.filter = 'grayscale(1) opacity(0.7)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.filter = 'grayscale(1) opacity(0.35)'; }}
-            />
+          <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+            <span style={{ fontSize:12,color:'rgba(255,255,255,.4)',fontFamily:"var(--fd)",letterSpacing:'.08em' }}>© 2026 FAIR PLAY. TODOS LOS DERECHOS RESERVADOS.</span>
+            <span style={{ color:'rgba(255,255,255,.2)' }}>·</span>
+            <span style={{ fontSize:11,color:'rgba(255,255,255,.3)',fontFamily:"var(--fd)" }}>by</span>
+            <Image src="/LOGO_FOKO.png" alt="Foko" width={80} height={28} style={{ height:28,width:'auto',filter:'brightness(0) invert(1)',opacity:.5,verticalAlign:'middle',marginLeft:6 }} />
           </div>
         </div>
       </footer>
