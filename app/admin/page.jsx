@@ -147,11 +147,13 @@ function ADash({ products, heros, cats }) {
 
 // ── Productos ─────────────────────────────────────────────────
 function AProds({ products, setProducts, cats, toast, refresh }) {
-  const [search,   setSearch]   = useState('');
-  const [catF,     setCatF]     = useState('todos');
-  const [showForm, setShowForm] = useState(false);
-  const [editing,  setEditing]  = useState(null);
-  const [saving,   setSaving]   = useState(false);
+  const [search,         setSearch]         = useState('');
+  const [catF,           setCatF]           = useState('todos');
+  const [showForm,       setShowForm]       = useState(false);
+  const [editing,        setEditing]        = useState(null);
+  const [saving,         setSaving]         = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError,     setPhotoError]     = useState(null);
   const EMPTY = { nombre:'',tipo:cats[0]?.id||'remeras',categoria:'hombre',talles_disponibles:[],imagen_url:'',fotos:[],descripcion:'',activo:true };
   const [form, setForm] = useState(EMPTY);
 
@@ -298,27 +300,70 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
                         {i === 0 && <div style={{ position:'absolute',bottom:0,left:0,right:0,background:'rgba(22,163,74,.85)',color:'#fff',fontSize:8,fontWeight:700,textAlign:'center',padding:2,letterSpacing:'.03em' }}>PRINCIPAL</div>}
                       </div>
                     ))}
+
+                    {/* Botón agregar fotos */}
                     {(form.fotos || []).length < 8 && (
-                      <div style={{ width:80,height:80,border:'2px dashed #cbd5e1',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',borderRadius:4,background:'#f9fafb',position:'relative',gap:3,flexShrink:0 }}>
-                        <input type="file" accept="image/*" multiple style={{ position:'absolute',inset:0,opacity:0,cursor:'pointer',width:'100%',height:'100%' }}
-                          onChange={async (e) => {
-                            const files = Array.from(e.target.files).slice(0, 8 - (form.fotos||[]).length);
-                            const newUrls = [];
-                            for (const file of files) {
-                              try { const url = await uploadImage(file); newUrls.push(url); } catch {}
-                            }
-                            setForm((f) => {
-                              const all = [...(f.fotos||[]), ...newUrls];
-                              return { ...f, fotos: all, imagen_url: all[0] || f.imagen_url };
-                            });
-                          }}
-                        />
-                        <span style={{ fontSize:20,pointerEvents:'none' }}>📸</span>
-                        <span style={{ fontSize:9,fontWeight:600,color:'#6b7280',pointerEvents:'none' }}>Agregar</span>
+                      <div style={{ width:80,height:80,border:`2px dashed ${photoUploading?'#16a34a':'#cbd5e1'}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',borderRadius:4,background:photoUploading?'#f0fdf4':'#f9fafb',position:'relative',gap:3,flexShrink:0,cursor:photoUploading?'not-allowed':'pointer' }}>
+                        {photoUploading ? (
+                          <>
+                            <Spin g />
+                            <span style={{ fontSize:8,fontWeight:600,color:'#16a34a',pointerEvents:'none' }}>Subiendo...</span>
+                          </>
+                        ) : (
+                          <>
+                            <input
+                              type="file" accept="image/*" multiple
+                              style={{ position:'absolute',inset:0,opacity:0,cursor:'pointer',width:'100%',height:'100%' }}
+                              disabled={photoUploading}
+                              onChange={async (e) => {
+                                const files = Array.from(e.target.files).slice(0, 8 - (form.fotos||[]).length);
+                                if (!files.length) return;
+                                setPhotoUploading(true);
+                                setPhotoError(null);
+                                const newUrls = [];
+                                for (const file of files) {
+                                  try {
+                                    const url = await uploadImage(file);
+                                    newUrls.push(url);
+                                  } catch (err) {
+                                    console.warn('[fotos] Supabase falló, usando base64:', err.message);
+                                    await new Promise((resolve) => {
+                                      const reader = new FileReader();
+                                      reader.onload  = (ev) => { newUrls.push(ev.target.result); resolve(); };
+                                      reader.onerror = () => resolve();
+                                      reader.readAsDataURL(file);
+                                    });
+                                  }
+                                }
+                                if (newUrls.length === 0) {
+                                  setPhotoError('No se pudieron cargar las imágenes. Verificá el bucket "imagenes" en Supabase.');
+                                } else {
+                                  setForm((f) => {
+                                    const all = [...(f.fotos||[]), ...newUrls];
+                                    return { ...f, fotos: all, imagen_url: all[0] || f.imagen_url };
+                                  });
+                                }
+                                setPhotoUploading(false);
+                                e.target.value = '';
+                              }}
+                            />
+                            <span style={{ fontSize:20,pointerEvents:'none' }}>📸</span>
+                            <span style={{ fontSize:9,fontWeight:600,color:'#6b7280',pointerEvents:'none' }}>Agregar</span>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
-                  <p style={{ fontSize:11,color:'#9ca3af',marginTop:5 }}>La 1ra foto es la principal. Máx. 8 fotos.</p>
+
+                  {/* Error de upload */}
+                  {photoError && (
+                    <div style={{ marginTop:8,background:'#fef2f2',border:'1px solid #fecaca',borderRadius:6,padding:'8px 12px',display:'flex',alignItems:'center',gap:8 }}>
+                      <span style={{ fontSize:12,color:'#dc2626',fontWeight:600,flex:1 }}>{photoError}</span>
+                      <button onClick={() => setPhotoError(null)} style={{ background:'none',border:'none',color:'#dc2626',cursor:'pointer',fontSize:14,lineHeight:1 }}>✕</button>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize:11,color:'#9ca3af',marginTop:5 }}>La 1ra foto es la principal. Máx. 8 fotos. Si Supabase falla se usa base64.</p>
                 </div>
               </div>
             </div>
