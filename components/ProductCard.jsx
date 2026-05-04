@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
-export default function ProductCard({ p, onAdd, cats = [], onOpen }) {
+function ProductCard({ p, onAdd, cats = [], onOpen }) {
   const [talle, setTalle] = useState(null);
   const [added, setAdded] = useState(false);
   const [shake, setShake] = useState(false);
@@ -34,6 +34,8 @@ export default function ProductCard({ p, onAdd, cats = [], onOpen }) {
         <img
           src={firstPhoto}
           alt={p.nombre}
+          loading="lazy"
+          sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
           onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80'; }}
         />
 
@@ -103,3 +105,5 @@ export default function ProductCard({ p, onAdd, cats = [], onOpen }) {
     </div>
   );
 }
+
+export default memo(ProductCard);

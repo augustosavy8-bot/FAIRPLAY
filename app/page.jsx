@@ -28,9 +28,24 @@ function useReveal() {
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('vis'); }),
       { threshold: 0.07 }
     );
-    document.querySelectorAll('.sr:not(.vis)').forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  });
+    const observe = () => document.querySelectorAll('.sr:not(.vis)').forEach((el) => obs.observe(el));
+    observe();
+    const mut = new MutationObserver(observe);
+    mut.observe(document.body, { childList: true, subtree: true });
+    return () => { obs.disconnect(); mut.disconnect(); };
+  }, []);
+}
+
+function ProductSkeleton() {
+  return (
+    <div style={{ background:'#fff' }}>
+      <div style={{ aspectRatio:'3/4',background:'#f0f0f0',animation:'shimmer 1.6s ease-in-out infinite' }} />
+      <div style={{ padding:'10px 0 16px',display:'flex',flexDirection:'column',gap:6 }}>
+        <div style={{ height:14,background:'#f0f0f0',borderRadius:2,animation:'shimmer 1.6s ease-in-out infinite' }} />
+        <div style={{ height:10,background:'#f0f0f0',borderRadius:2,width:'60%',animation:'shimmer 1.6s ease-in-out infinite .2s' }} />
+      </div>
+    </div>
+  );
 }
 
 function Toast({ msg, onDone }) {
@@ -59,10 +74,12 @@ export default function StorePage() {
   const [initLoading,   setInitLoading]   = useState(true);
   const [showOverlay,   setShowOverlay]   = useState(true);
 
-  const catDdRef  = useRef(null);
-  const catSecRef = useRef(null);
+  const catDdRef        = useRef(null);
+  const catSecRef       = useRef(null);
+  const searchDebounce  = useRef(null);
 
-  const showT = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(null), 2200); }, []);
+  const showT     = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(null), 2200); }, []);
+  const addToCart = useCallback((p) => { setCart((c) => [...c, p]); showT(`${p.nombre} agregado`); }, [showT]);
 
   // Load data
   useEffect(() => {
@@ -70,7 +87,7 @@ export default function StorePage() {
       try {
         const sb = getSupabaseClient();
         const [pr, hr, cr, bc, tk] = await Promise.all([
-          sb.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }),
+          sb.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }).limit(50),
           sb.from('hero_slides').select('*').order('created_at', { ascending: false }),
           sb.from('categorias').select('*').order('orden', { ascending: true }),
           sb.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
@@ -108,8 +125,7 @@ export default function StorePage() {
     return () => document.removeEventListener('mousedown', fn);
   }, []);
 
-  const activeH   = heros.find((h) => h.activo) || heros[0];
-  const addToCart = (p) => { setCart((c) => [...c, p]); showT(`${p.nombre} agregado`); };
+  const activeH = heros.find((h) => h.activo) || heros[0];
 
   const filtered = products.filter((p) => {
     if (catF !== 'todos' && p.tipo      !== catF) return false;
@@ -206,16 +222,19 @@ export default function StorePage() {
                 onChange={(e) => {
                   const v = e.target.value;
                   setSearch(v);
-                  if (v.length > 1) {
-                    scrollCat();
-                    const lower = v.toLowerCase();
-                    const catMatch = cats.find((c) =>
-                      c.id.toLowerCase().startsWith(lower) || c.label.toLowerCase().startsWith(lower)
-                    );
-                    setCatF(catMatch ? catMatch.id : 'todos');
-                  } else if (!v) {
-                    setCatF('todos');
-                  }
+                  clearTimeout(searchDebounce.current);
+                  searchDebounce.current = setTimeout(() => {
+                    if (v.length > 1) {
+                      scrollCat();
+                      const lower = v.toLowerCase();
+                      const catMatch = cats.find((c) =>
+                        c.id.toLowerCase().startsWith(lower) || c.label.toLowerCase().startsWith(lower)
+                      );
+                      setCatF(catMatch ? catMatch.id : 'todos');
+                    } else if (!v) {
+                      setCatF('todos');
+                    }
+                  }, 300);
                 }}
                 onBlur={() => { if (!search) setShowSearch(false); }}
                 placeholder="Buscar..."
@@ -382,7 +401,11 @@ export default function StorePage() {
 
           {/* ── GRID PRODUCTOS ── */}
           <div style={{ flex:1,minWidth:0,width:isMobile?'100%':undefined }}>
-            {filtered.length > 0 ? (
+            {products.length === 0 ? (
+              <div style={{ display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(200px,1fr))',gap:isMobile?12:18 }}>
+                {[...Array(isMobile ? 4 : 8)].map((_, i) => <ProductSkeleton key={i} />)}
+              </div>
+            ) : filtered.length > 0 ? (
               <div style={{ display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(200px,1fr))',gap:isMobile?12:18 }}>
                 {filtered.map((p, i) => (
                   <div key={p.id} className={`sr d${(i % 4) + 1}`}>

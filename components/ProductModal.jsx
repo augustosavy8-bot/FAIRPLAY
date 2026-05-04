@@ -88,7 +88,7 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
             {fotos.length > 1 && (
               <div style={{ display:'flex',gap:6,padding:'8px 10px',overflowX:'auto',background:'#fff',borderTop:'1px solid #f3f4f6',flexShrink:0 }}>
                 {fotos.map((f, i) => (
-                  <img key={i} src={f} alt="" onClick={() => setPhotoIdx(i)}
+                  <img key={i} src={f} alt="" loading="lazy" onClick={() => setPhotoIdx(i)}
                     style={{ width:56,height:56,objectFit:'cover',cursor:'pointer',flexShrink:0,border:i===photoIdx?'2px solid #0a0a0a':'2px solid transparent',opacity:i===photoIdx?1:.6,transition:'all .15s' }}
                     onError={(e) => (e.target.style.display = 'none')}
                   />

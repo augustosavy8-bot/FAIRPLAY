@@ -26,8 +26,18 @@ export default function Carousel({ title, items, cats, onAdd, onOpen, autoPlay =
     return () => clearInterval(timerRef.current);
   }, [autoPlay, interval, next, items.length, perView]);
 
+  useEffect(() => {
+    if (!autoPlay) return;
+    const fn = () => {
+      if (document.hidden) { clearInterval(timerRef.current); }
+      else { timerRef.current = setInterval(next, interval); }
+    };
+    document.addEventListener('visibilitychange', fn);
+    return () => document.removeEventListener('visibilitychange', fn);
+  }, [autoPlay, interval, next]);
+
   const pause  = () => clearInterval(timerRef.current);
-  const resume = () => { if (autoPlay) timerRef.current = setInterval(next, interval); };
+  const resume = () => { if (autoPlay && !document.hidden) timerRef.current = setInterval(next, interval); };
 
   if (!items.length) return null;
 
