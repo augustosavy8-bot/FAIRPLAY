@@ -172,7 +172,17 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
     if (!form.nombre) { setSaveError('El nombre del producto es requerido'); return; }
     setSaving(true);
     setSaveError(null);
-    const row = { nombre:form.nombre, tipo:form.tipo, categoria:form.categoria, talles_disponibles:form.talles_disponibles, imagen_url:form.fotos?.length>0?form.fotos[0]:form.imagen_url, fotos:form.fotos||[], descripcion:form.descripcion||'', activo:form.activo!==false };
+
+    // Strip base64 — only keep Supabase Storage URLs
+    const fotosClean = (form.fotos || []).filter((f) => typeof f === 'string' && f.startsWith('https://'));
+    const rawMain    = form.fotos?.length > 0 ? form.fotos[0] : (form.imagen_url || '');
+    const imagen_url = rawMain.startsWith('https://') ? rawMain : (fotosClean[0] || '');
+    const dropped    = (form.fotos || []).length - fotosClean.length;
+    if (dropped > 0) {
+      setSaveError(`${dropped} foto(s) no se subieron a Supabase Storage y fueron descartadas. Solo se guardarán las URLs válidas.`);
+    }
+
+    const row = { nombre:form.nombre, tipo:form.tipo, categoria:form.categoria, talles_disponibles:form.talles_disponibles, imagen_url, fotos:fotosClean, descripcion:form.descripcion||'', activo:form.activo!==false };
     console.log('[AProds save] payload:', row, '| editing:', editing);
     if (editing) {
       const { error } = await supabase.from('productos').update(row).eq('id', editing);
@@ -328,23 +338,20 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
                                 setPhotoUploading(true);
                                 setPhotoError(null);
                                 const newUrls = [];
+                                let failed = 0;
                                 for (const file of files) {
                                   try {
                                     const url = await uploadImage(file);
                                     newUrls.push(url);
                                   } catch (err) {
-                                    console.warn('[fotos] Supabase falló, usando base64:', err.message);
-                                    await new Promise((resolve) => {
-                                      const reader = new FileReader();
-                                      reader.onload  = (ev) => { newUrls.push(ev.target.result); resolve(); };
-                                      reader.onerror = () => resolve();
-                                      reader.readAsDataURL(file);
-                                    });
+                                    console.error('[fotos] Error subiendo imagen:', err.message);
+                                    failed++;
                                   }
                                 }
-                                if (newUrls.length === 0) {
-                                  setPhotoError('No se pudieron cargar las imágenes. Verificá el bucket "imagenes" en Supabase.');
-                                } else {
+                                if (failed > 0) {
+                                  setPhotoError(`${failed} imagen(es) no se pudieron subir. Verificá tu conexión y el bucket "imagenes" en Supabase.`);
+                                }
+                                if (newUrls.length > 0) {
                                   setForm((f) => {
                                     const all = [...(f.fotos||[]), ...newUrls];
                                     return { ...f, fotos: all, imagen_url: all[0] || f.imagen_url };

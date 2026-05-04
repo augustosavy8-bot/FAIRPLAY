@@ -24,19 +24,7 @@ export default function ImageUploader({ value, onChange, label = 'Subir imagen',
       onChange(url);
     } catch (err) {
       console.error('[ImageUploader] Error en Supabase Storage:', err.message, err);
-      // Fallback a base64 para que el admin pueda seguir trabajando
-      console.log('[ImageUploader] Usando fallback base64...');
-      try {
-        await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload  = (e) => { onChange(e.target.result); resolve(); };
-          reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
-          reader.readAsDataURL(file);
-        });
-        setError('Supabase no disponible — imagen guardada en base64 (funcionará pero no es ideal).');
-      } catch {
-        setError('No se pudo subir ni leer la imagen. Verificá el bucket "' + bucket + '" en Supabase.');
-      }
+      setError('Error al subir imagen. Verificá tu conexión.');
     }
 
     setLoading(false);
