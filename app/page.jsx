@@ -22,6 +22,27 @@ const FALLBACK_CATS = [
   {id:'medias',label:'Medias',icon:'🧦'},{id:'accesorios',label:'Accesorios',icon:'⌚'},
 ];
 
+const CACHE_PRODUCTOS = 'fp_productos_cache';
+const CACHE_HEROS     = 'fp_heros_cache';
+const CACHE_CATS      = 'fp_cats_cache';
+const CACHE_BANNERS   = 'fp_banners_cache';
+const TTL_SHORT       = 5  * 60 * 1000; // 5 min
+const TTL_LONG        = 10 * 60 * 1000; // 10 min
+
+function readCache(key, ttl) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { data, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp < ttl) return data;
+  } catch { }
+  return null;
+}
+
+function writeCache(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() })); } catch { }
+}
+
 function useReveal() {
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -54,10 +75,10 @@ function Toast({ msg, onDone }) {
 }
 
 export default function StorePage() {
-  const [products,     setProducts]     = useState([]);
-  const [heros,        setHeros]        = useState([FALLBACK_HERO]);
-  const [cats,         setCats]         = useState(FALLBACK_CATS);
-  const [bannerCards,  setBannerCards]  = useState([]);
+  const [products,     setProducts]     = useState(() => readCache(CACHE_PRODUCTOS, TTL_SHORT) || []);
+  const [heros,        setHeros]        = useState(() => readCache(CACHE_HEROS,     TTL_LONG)  || [FALLBACK_HERO]);
+  const [cats,         setCats]         = useState(() => readCache(CACHE_CATS,      TTL_LONG)  || FALLBACK_CATS);
+  const [bannerCards,  setBannerCards]  = useState(() => readCache(CACHE_BANNERS,   TTL_SHORT) || []);
   const [tickerItems,  setTickerItems]  = useState(FALLBACK_TICKER);
   const [cart,         setCart]         = useState([]);
   const [catF,         setCatF]         = useState('todos');
@@ -71,7 +92,10 @@ export default function StorePage() {
   const [selected,     setSelected]     = useState(null);
 
   const [isMobile,        setIsMobile]        = useState(false);
-  const [productsLoaded,  setProductsLoaded]  = useState(false);
+  const [productsLoaded,  setProductsLoaded]  = useState(() => {
+    const c = readCache(CACHE_PRODUCTOS, TTL_SHORT);
+    return !!(c && c.length > 0);
+  });
 
   const catDdRef        = useRef(null);
   const catSecRef       = useRef(null);
@@ -80,8 +104,11 @@ export default function StorePage() {
   const showT     = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(null), 2200); }, []);
   const addToCart = useCallback((p) => { setCart((c) => [...c, p]); showT(`${p.nombre} agregado`); }, [showT]);
 
-  // Load data
+  // Fetch en background — deja que el browser pinte el cache primero
   useEffect(() => {
+    // Skeleton máximo 2 segundos aunque Supabase tarde
+    const skeletonTimer = setTimeout(() => setProductsLoaded(true), 2000);
+
     const load = async () => {
       try {
         const sb = getSupabaseClient();
@@ -92,15 +119,17 @@ export default function StorePage() {
           sb.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
           sb.from('ticker_items').select('id,texto').eq('activo', true).order('orden', { ascending: true }),
         ]);
-        if (pr.data?.length)  setProducts(pr.data);
-        if (hr.data?.length)  setHeros(hr.data);
-        if (cr.data?.length)  setCats(cr.data);
-        if (bc.data?.length)  setBannerCards(bc.data);
-        if (tk.data?.length)  setTickerItems(tk.data);
+        if (pr.data?.length) { setProducts(pr.data);     writeCache(CACHE_PRODUCTOS, pr.data); }
+        if (hr.data?.length) { setHeros(hr.data);        writeCache(CACHE_HEROS,     hr.data); }
+        if (cr.data?.length) { setCats(cr.data);         writeCache(CACHE_CATS,      cr.data); }
+        if (bc.data?.length) { setBannerCards(bc.data);  writeCache(CACHE_BANNERS,   bc.data); }
+        if (tk.data?.length)   setTickerItems(tk.data);
       } catch (e) { console.error('load:', e); }
-      finally { setProductsLoaded(true); }
+      finally { clearTimeout(skeletonTimer); setProductsLoaded(true); }
     };
-    load();
+
+    const t = setTimeout(load, 100); // deja pintar el cache antes del fetch
+    return () => { clearTimeout(t); clearTimeout(skeletonTimer); };
   }, []);
 
   useReveal();
