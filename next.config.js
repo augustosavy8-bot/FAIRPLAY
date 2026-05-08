@@ -11,6 +11,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  experimental: {
+    isrFlushToDisk: false,
+  },
   async headers() {
     return [
       {
