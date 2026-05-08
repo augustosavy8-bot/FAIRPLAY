@@ -174,10 +174,10 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
     setSaving(true);
     setSaveError(null);
 
-    // Strip base64 — only keep Supabase Storage URLs
-    const fotosClean = (form.fotos || []).filter((f) => typeof f === 'string' && f.startsWith('https://'));
+    // Solo guardar URLs reales de Supabase Storage — descartar base64 y cualquier otra cosa
+    const fotosClean = (form.fotos || []).filter((f) => f && f.startsWith('http') && f.includes('supabase'));
     const rawMain    = form.fotos?.length > 0 ? form.fotos[0] : (form.imagen_url || '');
-    const imagen_url = rawMain.startsWith('https://') ? rawMain : (fotosClean[0] || '');
+    const imagen_url = (rawMain.startsWith('http') && rawMain.includes('supabase')) ? rawMain : (fotosClean[0] || '');
     const dropped    = (form.fotos || []).length - fotosClean.length;
     if (dropped > 0) {
       setSaveError(`${dropped} foto(s) no se subieron a Supabase Storage y fueron descartadas. Solo se guardarán las URLs válidas.`);

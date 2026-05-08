@@ -6,12 +6,13 @@ function ProductCard({ p, onAdd, cats = [], onOpen }) {
   const [added, setAdded] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const talles    = Array.isArray(p.talles_disponibles) ? p.talles_disponibles : [];
-  const cat       = cats.find((c) => c.id === p.tipo);
-  const firstPhoto = Array.isArray(p.fotos) && p.fotos.length > 0
-    ? p.fotos[0]
-    : p.imagen_url || 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80';
-  const extraFotos = Array.isArray(p.fotos) && p.fotos.length > 1 ? p.fotos.length : 0;
+  const talles     = Array.isArray(p.talles_disponibles) ? p.talles_disponibles : [];
+  const cat        = cats.find((c) => c.id === p.tipo);
+  const validFotos = (Array.isArray(p.fotos) ? p.fotos : []).filter((f) => f && f.startsWith('http'));
+  const imgSrc     = validFotos[0]
+    || (p.imagen_url && p.imagen_url.startsWith('http') ? p.imagen_url : null)
+    || 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80';
+  const extraFotos = validFotos.length > 1 ? validFotos.length : 0;
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -32,7 +33,7 @@ function ProductCard({ p, onAdd, cats = [], onOpen }) {
       {/* ── Imagen ── */}
       <div className="pcard-img">
         <img
-          src={firstPhoto}
+          src={imgSrc}
           alt={p.nombre}
           loading="lazy"
           decoding="async"
