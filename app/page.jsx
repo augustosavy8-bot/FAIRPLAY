@@ -126,6 +126,15 @@ export default function StorePage() {
 
   const activeH = heros.find((h) => h.activo) || heros[0];
 
+  useEffect(() => {
+    const src = activeH?.url_archivo || activeH?.url;
+    if (!src) return;
+    const link = document.createElement('link');
+    link.rel = 'preload'; link.as = 'image'; link.href = src;
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [activeH?.url_archivo, activeH?.url]);
+
   const filtered = products.filter((p) => {
     if (catF !== 'todos' && p.tipo      !== catF) return false;
     if (genF !== 'todos' && p.categoria !== genF) return false;
@@ -246,7 +255,8 @@ export default function StorePage() {
       <section style={{ height:'100vh',minHeight:580,position:'relative',overflow:'hidden',background:'#0a0a0a',display:'flex',alignItems:'center' }}>
         {activeH && (
           <img key={activeH.id || 0} src={activeH.url_archivo || activeH.url}
-            alt="" style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.52,animation:'heroKen 14s ease both' }} />
+            alt="" fetchPriority="high" decoding="async"
+            style={{ position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',opacity:.52,animation:'heroKen 14s ease both' }} />
         )}
         <div style={{ position:'absolute',inset:0,background:'linear-gradient(110deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.28) 60%,transparent 100%)' }} />
         <div style={{ position:'absolute',bottom:0,left:0,right:0,height:'25%',background:'linear-gradient(to top,rgba(10,10,10,.55),transparent)' }} />

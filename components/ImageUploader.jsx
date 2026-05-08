@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { uploadImage } from '@/lib/supabase';
+import { compressImage } from '@/lib/compress';
 import { Ic } from './Icons';
 
 export default function ImageUploader({ value, onChange, label = 'Subir imagen', bucket = 'imagenes' }) {
@@ -19,7 +20,9 @@ export default function ImageUploader({ value, onChange, label = 'Subir imagen',
     setError(null);
 
     try {
-      const url = await uploadImage(file, bucket);
+      const compressed = await compressImage(file);
+      console.log('[ImageUploader] Original:', file.size, 'bytes → Comprimida:', compressed.size, 'bytes');
+      const url = await uploadImage(compressed, bucket);
       console.log('[ImageUploader] URL obtenida:', url);
       onChange(url);
     } catch (err) {

@@ -28,6 +28,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { supabase, getSupabaseClient, uploadImage } from '@/lib/supabase';
+import { compressImage } from '@/lib/compress';
 import { Ic } from '@/components/Icons';
 import ImageUploader from '@/components/ImageUploader';
 
@@ -341,7 +342,8 @@ function AProds({ products, setProducts, cats, toast, refresh }) {
                                 let failed = 0;
                                 for (const file of files) {
                                   try {
-                                    const url = await uploadImage(file);
+                                    const compressed = await compressImage(file);
+                                    const url = await uploadImage(compressed);
                                     newUrls.push(url);
                                   } catch (err) {
                                     console.error('[fotos] Error subiendo imagen:', err.message);
