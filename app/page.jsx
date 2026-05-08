@@ -1,7 +1,22 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import Image from 'next/image';
-import { getSupabaseClient } from '@/lib/supabase';
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SB_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+async function fetchREST(table, params = '') {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
+      headers: {
+        apikey:        SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch { return []; }
+}
 import ProductCard   from '@/components/ProductCard';
 import ProductModal  from '@/components/ProductModal';
 import Carousel      from '@/components/Carousel';
@@ -111,19 +126,18 @@ export default function StorePage() {
 
     const load = async () => {
       try {
-        const sb = getSupabaseClient();
         const [pr, hr, cr, bc, tk] = await Promise.all([
-          sb.from('productos').select('*').eq('activo', true).order('created_at', { ascending: false }).limit(50),
-          sb.from('hero_slides').select('*').order('created_at', { ascending: false }),
-          sb.from('categorias').select('*').order('orden', { ascending: true }),
-          sb.from('banner_cards').select('*').eq('activo', true).order('orden', { ascending: true }),
-          sb.from('ticker_items').select('id,texto').eq('activo', true).order('orden', { ascending: true }),
+          fetchREST('productos',   'activo=eq.true&order=created_at.desc&limit=50'),
+          fetchREST('hero_slides', 'order=created_at.desc'),
+          fetchREST('categorias',  'order=orden.asc'),
+          fetchREST('banner_cards','activo=eq.true&order=orden.asc'),
+          fetchREST('ticker_items','activo=eq.true&select=id,texto&order=orden.asc'),
         ]);
-        if (pr.data?.length) { setProducts(pr.data);     writeCache(CACHE_PRODUCTOS, pr.data); }
-        if (hr.data?.length) { setHeros(hr.data);        writeCache(CACHE_HEROS,     hr.data); }
-        if (cr.data?.length) { setCats(cr.data);         writeCache(CACHE_CATS,      cr.data); }
-        if (bc.data?.length) { setBannerCards(bc.data);  writeCache(CACHE_BANNERS,   bc.data); }
-        if (tk.data?.length)   setTickerItems(tk.data);
+        if (pr?.length) { setProducts(pr);    writeCache(CACHE_PRODUCTOS, pr); }
+        if (hr?.length) { setHeros(hr);       writeCache(CACHE_HEROS,     hr); }
+        if (cr?.length) { setCats(cr);        writeCache(CACHE_CATS,      cr); }
+        if (bc?.length) { setBannerCards(bc); writeCache(CACHE_BANNERS,   bc); }
+        if (tk?.length)   setTickerItems(tk);
       } catch (e) { console.error('load:', e); }
       finally { clearTimeout(skeletonTimer); setProductsLoaded(true); }
     };
