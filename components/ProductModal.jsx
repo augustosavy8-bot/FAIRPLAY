@@ -2,9 +2,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Ic } from './Icons';
 
-export default function ProductModal({ p, cats, onAdd, onClose }) {
+const WA = '5493471510863';
+
+export default function ProductModal({ p, cats, onClose }) {
   const [talle,    setTalle]    = useState(null);
-  const [added,    setAdded]    = useState(false);
   const [shake,    setShake]    = useState(false);
   const [photoIdx, setPhotoIdx] = useState(0);
   const [zoomed,   setZoomed]   = useState(false);
@@ -22,11 +23,10 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
     return () => window.removeEventListener('keydown', fn);
   }, [onClose, zoomed]);
 
-  const handleAdd = () => {
+  const handleWA = () => {
     if (talles.length > 0 && !talle) { setShake(true); setTimeout(() => setShake(false), 500); return; }
-    onAdd({ ...p, talleSeleccionado: talle || 'Único' });
-    setAdded(true);
-    setTimeout(() => { setAdded(false); setTalle(null); }, 1800);
+    const msg = encodeURIComponent(`¡Hola Fair Play! 👋 Quiero consultar disponibilidad de: *${p.nombre}* - Talle: ${talle || 'Único'}`);
+    window.open(`https://wa.me/${WA}?text=${msg}`, '_blank');
   };
 
   const prev = () => setPhotoIdx((i) => (i <= 0 ? fotos.length - 1 : i - 1));
@@ -137,11 +137,10 @@ export default function ProductModal({ p, cats, onAdd, onClose }) {
 
             {/* CTA */}
             <div style={{ marginTop:'auto',paddingTop:20 }}>
-              <button onClick={handleAdd}
-                style={{ width:'100%',padding:15,border:'none',background:added?'#16a34a':'#0a0a0a',color:'#fff',fontFamily:"var(--fd)",fontSize:15,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
-                {added ? <><Ic n="ok" s={16} /> AGREGADO A LA BOLSA</> : <><Ic n="bag" s={16} /> AGREGAR A CONSULTA</>}
+              <button onClick={handleWA}
+                style={{ width:'100%',padding:15,border:'none',background:'#25D366',color:'#fff',fontFamily:"var(--fd)",fontSize:15,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',cursor:'pointer',transition:'all .2s',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
+                <Ic n="wa" s={16} /> CONSULTAR POR WHATSAPP
               </button>
-              <p style={{ fontSize:11,color:'#9ca3af',textAlign:'center',marginTop:8,lineHeight:1.5 }}>Consultá disponibilidad y precio por WhatsApp</p>
             </div>
           </div>
         </div>

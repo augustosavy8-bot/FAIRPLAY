@@ -1,25 +1,24 @@
 'use client';
 import { useState, memo } from 'react';
 
-function ProductCard({ p, onAdd, cats = [], onOpen }) {
+const WA = '5493471510863';
+
+function ProductCard({ p, cats = [], onOpen }) {
   const [talle, setTalle] = useState(null);
-  const [added, setAdded] = useState(false);
   const [shake, setShake] = useState(false);
 
   const talles     = Array.isArray(p.talles_disponibles) ? p.talles_disponibles : [];
   const cat        = cats.find((c) => c.id === p.tipo);
   const validFotos = (Array.isArray(p.fotos) ? p.fotos : []).filter((f) => f && f.startsWith('http'));
   const imgSrc     = validFotos[0]
-    || (p.imagen_url && p.imagen_url.startsWith('http') ? p.imagen_url : null)
-    || 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80';
+    || (p.imagen_url && p.imagen_url.startsWith('http') ? p.imagen_url : null);
   const extraFotos = validFotos.length > 1 ? validFotos.length : 0;
 
-  const handleAdd = (e) => {
+  const handleWA = (e) => {
     e.stopPropagation();
     if (talles.length > 0 && !talle) { setShake(true); setTimeout(() => setShake(false), 500); return; }
-    onAdd({ ...p, talleSeleccionado: talle || 'Único' });
-    setAdded(true);
-    setTimeout(() => { setAdded(false); setTalle(null); }, 1800);
+    const msg = encodeURIComponent(`¡Hola Fair Play! 👋 Quiero consultar disponibilidad de: *${p.nombre}* - Talle: ${talle || 'Único'}`);
+    window.open(`https://wa.me/${WA}?text=${msg}`, '_blank');
   };
 
   const genero = p.categoria
@@ -32,14 +31,16 @@ function ProductCard({ p, onAdd, cats = [], onOpen }) {
 
       {/* ── Imagen ── */}
       <div className="pcard-img">
-        <img
-          src={imgSrc}
-          alt={p.nombre}
-          loading="lazy"
-          decoding="async"
-          sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
-          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=600&q=80'; }}
-        />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={p.nombre}
+            loading="lazy"
+            decoding="async"
+            sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
+            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.style.background = '#f0f0f0'; }}
+          />
+        ) : null}
 
         {/* Badge de fotos — esquina inferior derecha, sutil */}
         {extraFotos > 0 && (
@@ -57,13 +58,13 @@ function ProductCard({ p, onAdd, cats = [], onOpen }) {
         {/* Quick add */}
         <button
           className="pcard-quick"
-          onClick={handleAdd}
+          onClick={handleWA}
           style={{
-            background: added ? '#16a34a' : shake ? '#dc2626' : '#0a0a0a',
+            background: shake ? '#dc2626' : '#25D366',
             animation: shake ? 'shake .4s' : 'none',
           }}
         >
-          {added ? '✓ AGREGADO' : shake ? 'ELEGÍ UN TALLE' : 'AGREGAR A CONSULTA'}
+          {shake ? 'ELEGÍ UN TALLE' : 'CONSULTAR POR WHATSAPP'}
         </button>
       </div>
 

@@ -4,7 +4,6 @@ import Image from 'next/image';
 import ProductCard   from '@/components/ProductCard';
 import ProductModal  from '@/components/ProductModal';
 import Carousel      from '@/components/Carousel';
-import CartPanel     from '@/components/CartPanel';
 import BannerCards   from '@/components/BannerCards';
 import { Ic }        from '@/components/Icons';
 
@@ -70,11 +69,6 @@ function ProductSkeleton() {
   );
 }
 
-function Toast({ msg, onDone }) {
-  useEffect(() => { const t = setTimeout(onDone, 2200); return () => clearTimeout(t); }, [onDone]);
-  return <div className="toast">✓ {msg}</div>;
-}
-
 // ── Componente principal ──────────────────────────────────────
 export default function StoreClient({
   initialProducts    = [],
@@ -90,15 +84,12 @@ export default function StoreClient({
   const [bannerCards, setBannerCards] = useState(() => initialBannerCards.length ? initialBannerCards : (readCache(CACHE_BANNERS,   TTL_SHORT) || []));
   const [tickerItems, setTickerItems] = useState(() => initialTickerItems.length ? initialTickerItems : FALLBACK_TICKER);
 
-  const [cart,        setCart]        = useState([]);
   const [catF,        setCatF]        = useState('todos');
   const [genF,        setGenF]        = useState('todos');
   const [search,      setSearch]      = useState('');
   const [showSearch,  setShowSearch]  = useState(false);
-  const [showCart,    setShowCart]    = useState(false);
   const [showCatDd,   setShowCatDd]   = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
-  const [toast,       setToast]       = useState(null);
   const [selected,    setSelected]    = useState(null);
   const [isMobile,    setIsMobile]    = useState(false);
 
@@ -110,9 +101,6 @@ export default function StoreClient({
   const catDdRef       = useRef(null);
   const catSecRef      = useRef(null);
   const searchDebounce = useRef(null);
-
-  const showT     = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(null), 2200); }, []);
-  const addToCart = useCallback((p)   => { setCart((c) => [...c, p]); showT(`${p.nombre} agregado`); }, [showT]);
 
   // Seed localStorage con datos frescos del server
   useEffect(() => {
@@ -192,7 +180,6 @@ export default function StoreClient({
 
   return (
     <div style={{ fontFamily:"var(--fb)",background:'#fff' }}>
-      {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
 
       {/* ── TICKER ── */}
       <div className="ticker">
@@ -265,12 +252,6 @@ export default function StoreClient({
             <button onClick={() => setShowSearch((v) => !v)} style={{ width:36,height:36,border:'none',background:scrolled?'#f3f4f6':'rgba(255,255,255,.1)',color:scrolled?'#0a0a0a':'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:3 }}>
               <Ic n="sr" s={17} />
             </button>
-            <button onClick={() => setShowCart(true)} style={{ width:36,height:36,border:'none',background:scrolled?'#f3f4f6':'rgba(255,255,255,.1)',color:scrolled?'#0a0a0a':'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:3,position:'relative' }}>
-              <Ic n="bag" s={18} />
-              {cart.length > 0 && (
-                <div style={{ position:'absolute',top:-4,right:-4,width:17,height:17,borderRadius:'50%',background:'#16a34a',color:'#fff',fontSize:9,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',border:'2px solid #fff',animation:'badgePop .3s ease' }}>{cart.length}</div>
-              )}
-            </button>
           </div>
         </div>
       </nav>
@@ -325,7 +306,7 @@ export default function StoreClient({
                 <Carousel
                   title={`${cat?.icon || ''} ${cat?.label || tipo}`}
                   items={items} cats={cats}
-                  onAdd={addToCart} onOpen={setSelected}
+                  onOpen={setSelected}
                 />
               </div>
             );
@@ -423,7 +404,7 @@ export default function StoreClient({
               <div style={{ display:'grid',gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(200px,1fr))',gap:isMobile?12:18 }}>
                 {filtered.map((p, i) => (
                   <div key={p.id} className={`sr d${(i % 4) + 1}`}>
-                    <ProductCard p={p} onAdd={addToCart} cats={cats} onOpen={setSelected} />
+                    <ProductCard p={p} cats={cats} onOpen={setSelected} />
                   </div>
                 ))}
               </div>
@@ -448,11 +429,11 @@ export default function StoreClient({
             TU CONSULTA,<br /><span style={{ color:'var(--gl)' }}>UN MENSAJE</span>
           </h2>
           <p className="sr d2" style={{ color:'rgba(255,255,255,.55)',fontSize:15,maxWidth:380,margin:'0 auto 28px',lineHeight:1.7 }}>
-            Agregá productos a tu bolsa y te respondemos por WhatsApp con stock y precios.
+            Escribinos por WhatsApp y te respondemos con stock y precios al instante.
           </p>
-          <button className="sr d3 btn-g" style={{ fontSize:14,padding:'14px 36px' }} onClick={() => setShowCart(true)}>
+          <a className="sr d3 btn-g" style={{ fontSize:14,padding:'14px 36px',display:'inline-flex',alignItems:'center',gap:8,textDecoration:'none' }} href="https://wa.me/5493471510863" target="_blank" rel="noreferrer">
             <Ic n="wa" s={17} /> CONSULTAR AHORA
-          </button>
+          </a>
         </div>
       </section>
 
@@ -482,16 +463,7 @@ export default function StoreClient({
         <Ic n="wa" s={26} />
       </a>
 
-      {/* ── FLOATING CART ── */}
-      {cart.length > 0 && !showCart && (
-        <button onClick={() => setShowCart(true)} style={{ position:'fixed',bottom:22,right:22,zIndex:800,width:54,height:54,background:'#0a0a0a',border:'none',color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 24px rgba(0,0,0,.3)',animation:'badgePop .3s ease' }}>
-          <Ic n="bag" s={21} />
-          <div style={{ position:'absolute',top:-4,right:-4,width:19,height:19,borderRadius:'50%',background:'var(--g)',color:'#fff',fontSize:10,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',border:'2px solid #fff' }}>{cart.length}</div>
-        </button>
-      )}
-
-      {showCart  && <CartPanel items={cart} onRemove={(i) => setCart((c) => c.filter((_, idx) => idx !== i))} onClose={() => setShowCart(false)} />}
-      {selected  && <ProductModal p={selected} cats={cats} onAdd={addToCart} onClose={() => setSelected(null)} />}
+      {selected  && <ProductModal p={selected} cats={cats} onClose={() => setSelected(null)} />}
     </div>
   );
 }

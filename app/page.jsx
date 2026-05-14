@@ -23,11 +23,17 @@ export default async function StorePage() {
     sbFetch('ticker_items', 'activo=eq.true&select=id,texto&order=orden.asc'),
   ]);
 
-  // Excluir base64 — solo pasar URLs de Storage al HTML pre-renderizado
+  // Debug: ver qué imagen_url llega desde Supabase
+  console.log('[page] productos recibidos:', rawProducts.length);
+  console.log('[page] primeras 3 imagen_url:',
+    rawProducts.slice(0, 3).map((p) => ({ nombre: p.nombre, imagen_url: p.imagen_url?.slice(0, 80) }))
+  );
+
+  // Excluir base64 — solo pasar URLs http al HTML pre-renderizado
   const products = rawProducts.map((p) => ({
     ...p,
-    fotos:      (p.fotos || []).filter((f) => typeof f === 'string' && f.startsWith('http')),
-    imagen_url: typeof p.imagen_url === 'string' && p.imagen_url.startsWith('data:') ? '' : p.imagen_url,
+    fotos:      (p.fotos || []).filter((f) => f && typeof f === 'string' && f.startsWith('http')),
+    imagen_url: (p.imagen_url && p.imagen_url.startsWith('http')) ? p.imagen_url : null,
   }));
 
   return (
