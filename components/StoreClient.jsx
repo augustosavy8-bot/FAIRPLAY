@@ -170,7 +170,7 @@ export default function StoreClient({
   };
 
   const handleBannerFilter = useCallback((categoria) => {
-    if (categoria) setCatF(categoria);
+    if (categoria) { setCatF(categoria); setGenF('todos'); }
     if (!catSecRef.current) return;
     const y = catSecRef.current.getBoundingClientRect().top + window.pageYOffset - 80;
     window.scrollTo({ top: y, behavior: 'smooth' });

@@ -540,13 +540,13 @@ function AHero({ heros, setHeros, toast, refresh }) {
 }
 
 // ── Tarjetas ──────────────────────────────────────────────────
-function ACards({ toast }) {
+function ACards({ toast, cats = [] }) {
   const [cards,    setCards]    = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing,  setEditing]  = useState(null);
   const [saving,   setSaving]   = useState(false);
-  const EMPTY = { titulo:'',subtitulo:'',etiqueta:'',cta:'Ver colección',imagen_url:'',bloque:1,orden:0,activo:true };
+  const EMPTY = { titulo:'',subtitulo:'',etiqueta:'',cta:'Ver colección',imagen_url:'',bloque:1,orden:0,activo:true,categoria:'' };
   const [form, setForm] = useState(EMPTY);
 
   useEffect(() => {
@@ -560,7 +560,7 @@ function ACards({ toast }) {
   const save = async () => {
     if (!form.imagen_url) return;
     setSaving(true);
-    const row = { titulo:form.titulo,subtitulo:form.subtitulo,etiqueta:form.etiqueta,cta:form.cta,imagen_url:form.imagen_url,bloque:parseInt(form.bloque)||1,orden:parseInt(form.orden)||0,activo:form.activo!==false };
+    const row = { titulo:form.titulo,subtitulo:form.subtitulo,etiqueta:form.etiqueta,cta:form.cta,imagen_url:form.imagen_url,bloque:parseInt(form.bloque)||1,orden:parseInt(form.orden)||0,activo:form.activo!==false,categoria:form.categoria||null };
     if (editing) {
       const { error } = await supabase.from('banner_cards').update(row).eq('id', editing);
       if (!error) { setCards((c) => c.map((x) => x.id === editing ? { ...x, ...row } : x)); toast('Tarjeta actualizada'); }
@@ -625,6 +625,11 @@ function ACards({ toast }) {
                   <select className="as" value={form.bloque||1} onChange={(e) => setForm((f)=>({...f,bloque:parseInt(e.target.value)}))}>
                     <option value={1}>Bloque 1 — Entre hero y carouseles</option>
                     <option value={2}>Bloque 2 — Antes del catálogo</option>
+                  </select></div>
+                <div><label className="albl">Filtrar catálogo al hacer clic</label>
+                  <select className="as" value={form.categoria||''} onChange={(e) => setForm((f)=>({...f,categoria:e.target.value}))}>
+                    <option value="">— Sin filtro (solo scroll) —</option>
+                    {cats.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
                   </select></div>
                 <div style={{ gridColumn:'1/-1' }}><label className="albl">Imagen *</label>
                   <ImageUploader value={form.imagen_url||''} onChange={(v)=>setForm((f)=>({...f,imagen_url:v}))} label="Subir imagen (1200x600px)" /></div>
@@ -898,7 +903,7 @@ export default function AdminPage() {
             {sec === 'productos'  && <AProds  products={products} setProducts={setProducts} cats={cats} toast={showToast} refresh={fetchAll} />}
             {sec === 'categorias' && <ACats   cats={cats} setCats={setCats} toast={showToast} refresh={fetchAll} />}
             {sec === 'hero'       && <AHero   heros={heros} setHeros={setHeros} toast={showToast} refresh={fetchAll} />}
-            {sec === 'cards'      && <ACards   toast={showToast} />}
+            {sec === 'cards'      && <ACards   cats={cats} toast={showToast} />}
             {sec === 'ticker'     && <ATicker  toast={showToast} />}
             {sec === 'config'     && <ACfg />}
           </>
