@@ -23,11 +23,14 @@ export default function ImageUploader({ value, onChange, label = 'Subir imagen',
       const compressed = await compressImage(file);
       console.log('[ImageUploader] Original:', file.size, 'bytes → Comprimida:', compressed.size, 'bytes');
       const url = await uploadImage(compressed, bucket);
+      if (!url || url.startsWith('data:')) {
+        throw new Error('uploadImage devolvió base64 en lugar de una URL de Storage');
+      }
       console.log('[ImageUploader] URL obtenida:', url);
       onChange(url);
     } catch (err) {
       console.error('[ImageUploader] Error en Supabase Storage:', err.message, err);
-      setError('Error al subir imagen. Verificá tu conexión.');
+      setError('Error al subir. Verificá tu conexión a internet.');
     }
 
     setLoading(false);

@@ -545,7 +545,8 @@ function ACards({ toast, cats = [] }) {
   const [loading,  setLoading]  = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing,  setEditing]  = useState(null);
-  const [saving,   setSaving]   = useState(false);
+  const [saving,    setSaving]    = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const EMPTY = { titulo:'',subtitulo:'',etiqueta:'',cta:'Ver colección',imagen_url:'',bloque:1,orden:0,activo:true,categoria:'' };
   const [form, setForm] = useState(EMPTY);
 
@@ -554,31 +555,42 @@ function ACards({ toast, cats = [] }) {
       .then((r) => { if (r.data) setCards(r.data); setLoading(false); });
   }, []);
 
-  const openNew  = () => { setForm({ ...EMPTY, orden:cards.length }); setEditing(null); setShowForm(true); };
-  const openEdit = (c) => { setForm({ ...c }); setEditing(c.id); setShowForm(true); };
+  const openNew  = () => { setForm({ ...EMPTY, orden:cards.length }); setEditing(null); setSaveError(null); setShowForm(true); };
+  const openEdit = (c) => { setForm({ ...c }); setEditing(c.id); setSaveError(null); setShowForm(true); };
 
   const save = async () => {
-    if (!form.imagen_url) return;
+    setSaveError(null);
+    if (!form.imagen_url || form.imagen_url.startsWith('data:')) {
+      setSaveError('La imagen es requerida. Subí una imagen válida antes de guardar.');
+      return;
+    }
     setSaving(true);
     const row = {
-      titulo:      form.titulo,
-      subtitulo:   form.subtitulo,
-      etiqueta:    form.etiqueta,
-      cta:         form.cta,
-      imagen_url:  form.imagen_url?.startsWith('data:') ? '' : form.imagen_url,
-      bloque:      parseInt(form.bloque) || 1,
-      orden:       parseInt(form.orden)  || 0,
-      activo:      form.activo !== false,
-      categoria:   form.categoria || null,
+      titulo:    form.titulo,
+      subtitulo: form.subtitulo,
+      etiqueta:  form.etiqueta,
+      cta:       form.cta,
+      imagen_url: form.imagen_url,
+      bloque:    parseInt(form.bloque) || 1,
+      orden:     parseInt(form.orden)  || 0,
+      activo:    form.activo !== false,
+      categoria: form.categoria || null,
     };
     if (editing) {
       const { error } = await supabase.from('banner_cards').update(row).eq('id', editing);
-      if (!error) { setCards((c) => c.map((x) => x.id === editing ? { ...x, ...row } : x)); toast('Tarjeta actualizada'); }
+      if (error) { setSaveError(error.message); }
+      else { setCards((c) => c.map((x) => x.id === editing ? { ...x, ...row } : x)); toast('Tarjeta actualizada'); setShowForm(false); }
     } else {
-      const { data, error } = await supabase.from('banner_cards').insert(row).select().single();
-      if (!error && data) { setCards((c) => [...c, data]); toast('Tarjeta creada'); }
+      const { error } = await supabase.from('banner_cards').insert(row);
+      if (error) { setSaveError(error.message); }
+      else {
+        const { data: newCards } = await supabase.from('banner_cards').select('*').order('orden', { ascending:true });
+        if (newCards) setCards(newCards);
+        toast('Tarjeta creada');
+        setShowForm(false);
+      }
     }
-    setSaving(false); setShowForm(false);
+    setSaving(false);
   };
 
   const toggle = async (c) => { await supabase.from('banner_cards').update({ activo:!c.activo }).eq('id', c.id); setCards((cs) => cs.map((x) => x.id === c.id ? { ...x, activo:!x.activo } : x)); };
@@ -645,9 +657,17 @@ function ACards({ toast, cats = [] }) {
                   <ImageUploader value={form.imagen_url||''} onChange={(v)=>setForm((f)=>({...f,imagen_url:v}))} label="Subir imagen (1200x600px)" /></div>
               </div>
             </div>
-            <div style={{ padding:'14px 20px',borderTop:'1px solid #f3f4f6',display:'flex',gap:10,justifyContent:'flex-end',flexShrink:0 }}>
-              <button onClick={()=>setShowForm(false)} style={{ padding:'9px 18px',border:'1px solid #e5e7eb',background:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,borderRadius:6,fontFamily:"var(--fb)" }}>Cancelar</button>
-              <button onClick={save} disabled={saving} className="btn-g" style={{ padding:'9px 22px',borderRadius:6 }}>{saving?<Spin/>:(editing?'Guardar':'Crear tarjeta')}</button>
+            <div style={{ padding:'14px 20px',borderTop:'1px solid #f3f4f6',flexShrink:0 }}>
+              {saveError && (
+                <div style={{ background:'#fef2f2',border:'1px solid #fecaca',borderRadius:6,padding:'8px 12px',marginBottom:10,display:'flex',alignItems:'center',gap:8 }}>
+                  <span style={{ fontSize:12,color:'#dc2626',fontWeight:600,flex:1 }}>⚠ {saveError}</span>
+                  <button onClick={() => setSaveError(null)} style={{ background:'none',border:'none',color:'#dc2626',cursor:'pointer',fontSize:14,lineHeight:1 }}>✕</button>
+                </div>
+              )}
+              <div style={{ display:'flex',gap:10,justifyContent:'flex-end' }}>
+                <button onClick={() => { setShowForm(false); setSaveError(null); }} style={{ padding:'9px 18px',border:'1px solid #e5e7eb',background:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,borderRadius:6,fontFamily:"var(--fb)" }}>Cancelar</button>
+                <button onClick={save} disabled={saving} className="btn-g" style={{ padding:'9px 22px',borderRadius:6 }}>{saving?<Spin/>:(editing?'Guardar':'Crear tarjeta')}</button>
+              </div>
             </div>
           </div>
         </div>
