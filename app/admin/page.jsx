@@ -560,7 +560,17 @@ function ACards({ toast, cats = [] }) {
   const save = async () => {
     if (!form.imagen_url) return;
     setSaving(true);
-    const row = { titulo:form.titulo,subtitulo:form.subtitulo,etiqueta:form.etiqueta,cta:form.cta,imagen_url:form.imagen_url,bloque:parseInt(form.bloque)||1,orden:parseInt(form.orden)||0,activo:form.activo!==false,categoria:form.categoria||null };
+    const row = {
+      titulo:      form.titulo,
+      subtitulo:   form.subtitulo,
+      etiqueta:    form.etiqueta,
+      cta:         form.cta,
+      imagen_url:  form.imagen_url?.startsWith('data:') ? '' : form.imagen_url,
+      bloque:      parseInt(form.bloque) || 1,
+      orden:       parseInt(form.orden)  || 0,
+      activo:      form.activo !== false,
+      categoria:   form.categoria || null,
+    };
     if (editing) {
       const { error } = await supabase.from('banner_cards').update(row).eq('id', editing);
       if (!error) { setCards((c) => c.map((x) => x.id === editing ? { ...x, ...row } : x)); toast('Tarjeta actualizada'); }
