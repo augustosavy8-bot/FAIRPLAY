@@ -16,7 +16,7 @@ async function sbFetch(table, params = '') {
 
 export default async function StorePage() {
   const [rawProducts, heros, cats, bannerCards, tickerItems] = await Promise.all([
-    sbFetch('productos',    'activo=eq.true&order=created_at.desc&limit=50'),
+    sbFetch('productos',    'activo=eq.true&order=created_at.desc&limit=200'),
     sbFetch('hero_slides',  'order=created_at.desc'),
     sbFetch('categorias',   'order=orden.asc'),
     sbFetch('banner_cards', 'activo=eq.true&order=orden.asc'),
