@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { uploadImage } from '@/lib/supabase';
+import { uploadImage } from '@/lib/upload';
 import { compressImage } from '@/lib/compress';
 import { Ic } from './Icons';
 
