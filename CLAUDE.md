@@ -16,7 +16,8 @@ app/
   admin/
     layout.jsx      noindex para todo /admin
     page.jsx        Server: valida admin (getAdmin) y renderiza <AdminPanel>
-    AdminPanel.jsx  Panel completo (client). Lee con lib/supabase/browser, escribe SOLO con actions.js
+    AdminPanel.jsx  Shell del panel (client): navegación, carga inicial, toasts. Lee con lib/supabase/browser
+    _components/    Una sección por archivo: Dashboard, Productos, Categorias, Hero, Tarjetas, Ticker, Config + ui.jsx (Spin, Toast, DCATS)
     actions.js      Server actions de escritura (whitelist de columnas + chequeo de admin)
     login/          Login con Supabase Auth (email + contraseña)
   globals.css       Variables de diseño, animaciones y clases compartidas
@@ -28,7 +29,6 @@ components/
   Icons.jsx         Set de íconos SVG (<Ic n="..."/>)
 middleware.js       Protege /admin/* (sin sesión → /admin/login) y refresca cookies de Supabase
 lib/
-  supabase.js       Cliente anon singleton (proxy lazy) y fetchers
   supabase/server.js  Cliente con cookies para server components/actions (server-only)
   supabase/browser.js Cliente del navegador con la sesión del admin
   auth.js           getAdmin(): usuario logueado + rpc is_admin()
