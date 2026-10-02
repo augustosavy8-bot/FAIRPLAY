@@ -16,7 +16,8 @@ export default function AProds({ products, setProducts, cats, toast, refresh }) 
   const [saveError,      setSaveError]      = useState(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError,     setPhotoError]     = useState(null);
-  const EMPTY = { nombre:'',tipo:cats[0]?.id||'remeras',categoria:'hombre',talles_disponibles:[],imagen_url:'',fotos:[],descripcion:'',activo:true };
+  const EMPTY = { nombre:'',tipo:cats[0]?.id||'remeras',categoria:'hombre',talles_disponibles:[],imagen_url:'',fotos:[],descripcion:'',activo:true,precio:'',precio_anterior:'',destacado:false };
+  const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
   const [form, setForm] = useState(EMPTY);
 
   const filtered = products.filter((p) => {
@@ -26,7 +27,7 @@ export default function AProds({ products, setProducts, cats, toast, refresh }) 
   });
 
   const openNew  = () => { setForm(EMPTY); setEditing(null); setShowForm(true); };
-  const openEdit = (p) => { setForm({ ...p, fotos: Array.isArray(p.fotos) ? p.fotos : (p.imagen_url ? [p.imagen_url] : []) }); setEditing(p.id); setShowForm(true); };
+  const openEdit = (p) => { setForm({ ...p, precio: p.precio ?? '', precio_anterior: p.precio_anterior ?? '', fotos: Array.isArray(p.fotos) ? p.fotos : (p.imagen_url ? [p.imagen_url] : []) }); setEditing(p.id); setShowForm(true); };
   const togT     = (t) => setForm((f) => { const a = f.talles_disponibles || []; return { ...f, talles_disponibles: a.includes(t) ? a.filter((x) => x !== t) : [...a, t] }; });
 
   const save = async () => {
@@ -43,7 +44,11 @@ export default function AProds({ products, setProducts, cats, toast, refresh }) 
       setSaveError(`${dropped} foto(s) no se subieron a Supabase Storage y fueron descartadas. Solo se guardarán las URLs válidas.`);
     }
 
-    const row = { nombre:form.nombre, tipo:form.tipo, categoria:form.categoria, talles_disponibles:form.talles_disponibles, imagen_url, fotos:fotosClean, descripcion:form.descripcion||'', activo:form.activo!==false };
+    const precio = num(form.precio), precio_anterior = num(form.precio_anterior);
+    if (precio_anterior != null && (precio == null || precio_anterior <= precio)) {
+      setSaveError('El precio anterior tiene que ser mayor al precio actual.'); setSaving(false); return;
+    }
+    const row = { nombre:form.nombre, tipo:form.tipo, categoria:form.categoria, talles_disponibles:form.talles_disponibles, imagen_url, fotos:fotosClean, descripcion:form.descripcion||'', activo:form.activo!==false, precio, precio_anterior, destacado:!!form.destacado };
     if (editing) {
       const { error } = await adminUpdate('productos', editing, row);
       if (error) { setSaveError(error.message); }
@@ -147,6 +152,20 @@ export default function AProds({ products, setProducts, cats, toast, refresh }) 
                     <option value="unisex">Unisex</option>
                     <option value="niños">Niños</option>
                   </select>
+                </div>
+                <div>
+                  <label className="albl">Precio (opcional)</label>
+                  <input className="ai" type="number" inputMode="decimal" min="0" step="1" value={form.precio ?? ''} onChange={(e) => setForm((f) => ({ ...f, precio:e.target.value }))} placeholder="Sin precio" />
+                </div>
+                <div>
+                  <label className="albl">Precio anterior (opcional)</label>
+                  <input className="ai" type="number" inputMode="decimal" min="0" step="1" value={form.precio_anterior ?? ''} onChange={(e) => setForm((f) => ({ ...f, precio_anterior:e.target.value }))} placeholder="Para mostrar % OFF" />
+                </div>
+                <div style={{ gridColumn:'1/-1' }}>
+                  <label style={{ display:'flex',alignItems:'center',gap:8,fontSize:14,fontWeight:600,cursor:'pointer' }}>
+                    <input type="checkbox" checked={!!form.destacado} onChange={(e) => setForm((f) => ({ ...f, destacado:e.target.checked }))} style={{ width:16,height:16,accentColor:'#16a34a' }} />
+                    Destacado (aparece en “Lo más buscado”)
+                  </label>
                 </div>
                 <div style={{ gridColumn:'1/-1' }}>
                   <label className="albl">Descripción (opcional)</label>

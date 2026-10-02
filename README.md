@@ -1,6 +1,6 @@
 # Fair Play — Vida Deportiva
 
-Tienda online de indumentaria deportiva hecha con **Next.js 14** y **Supabase**. Los clientes arman una bolsa de consulta y la envían por WhatsApp. Incluye un panel de administración en `/admin` para cargar productos, carrusel, categorías, banners y la cinta de avisos.
+Tienda online de indumentaria deportiva hecha con **Next.js 14** y **Supabase**. Los clientes arman una bolsa (talle + cantidad), guardan favoritos y envían el pedido por WhatsApp. Cada producto tiene su página `/producto/<slug>` para compartir. Incluye un panel de administración en `/admin` para cargar productos (con precio opcional y "destacado"), carrusel, categorías, banners, la cinta de avisos y ajustes.
 
 ## Requisitos
 - Node.js 18.17 o superior

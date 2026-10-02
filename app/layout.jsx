@@ -1,4 +1,4 @@
-import { Barlow, Barlow_Condensed } from 'next/font/google';
+import { Barlow, Barlow_Condensed, Inter } from 'next/font/google';
 import './globals.css';
 
 const barlow = Barlow({
@@ -15,7 +15,14 @@ const barlowCondensed = Barlow_Condensed({
   display: 'swap',
 });
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 export const metadata = {
+  metadataBase: new URL('https://www.fairplayvidadeportiva.com.ar'),
   title: 'Fair Play — Vida Deportiva',
   description: 'Indumentaria deportiva premium. Remeras, buzos, camperas, mochilas y más.',
   openGraph: {
@@ -25,9 +32,14 @@ export const metadata = {
   },
 };
 
+export const viewport = {
+  themeColor: '#ffffff',
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className={`${barlow.variable} ${barlowCondensed.variable}`}>
+    <html lang="es" className={`${barlow.variable} ${barlowCondensed.variable} ${inter.variable}`}>
       <body>{children}</body>
     </html>
   );

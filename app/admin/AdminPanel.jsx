@@ -122,7 +122,7 @@ export default function AdminPanel({ userEmail }) {
             {sec === 'hero'       && <AHero   heros={heros} setHeros={setHeros} toast={showToast} refresh={fetchAll} />}
             {sec === 'cards'      && <ACards   cats={cats} toast={showToast} />}
             {sec === 'ticker'     && <ATicker  toast={showToast} />}
-            {sec === 'config'     && <ACfg userEmail={userEmail} />}
+            {sec === 'config'     && <ACfg userEmail={userEmail} toast={showToast} />}
           </>
         )}
       </main>

@@ -4,7 +4,7 @@ import { getAdmin } from '@/lib/auth';
 
 // Columnas que el admin puede escribir en cada tabla. Cualquier otra se descarta.
 const COLUMNS = {
-  productos:    ['nombre', 'tipo', 'categoria', 'talles_disponibles', 'imagen_url', 'fotos', 'descripcion', 'activo'],
+  productos:    ['nombre', 'tipo', 'categoria', 'talles_disponibles', 'imagen_url', 'fotos', 'descripcion', 'activo', 'precio', 'precio_anterior', 'destacado'],
   categorias:   ['id', 'label', 'icon', 'orden'],
   hero_slides:  ['url_archivo', 'tipo_archivo', 'titulo', 'subtitulo', 'activo'],
   banner_cards: ['titulo', 'subtitulo', 'etiqueta', 'cta', 'imagen_url', 'bloque', 'orden', 'activo', 'categoria'],
@@ -26,7 +26,7 @@ async function asAdmin(fn) {
   try {
     const { data, error } = await fn(sb);
     if (error) return { data: null, error: { message: error.message } };
-    revalidatePath('/');
+    revalidatePath('/', 'layout');
     return { data: data ?? null, error: null };
   } catch (e) {
     return { data: null, error: { message: e.message || 'Error inesperado' } };
@@ -71,4 +71,17 @@ export async function createUploadUrl(fileName, contentType) {
   if (error) return { data: null, error: { message: error.message } };
   const { data: pub } = sb.storage.from(BUCKET).getPublicUrl(path);
   return { data: { path: data.path, token: data.token, publicUrl: pub.publicUrl }, error: null };
+}
+
+// Ajustes de la tienda (tabla clave/valor). Solo claves conocidas.
+const AJUSTES = {
+  nuevo_dias: (v) => { const n = parseInt(v, 10); if (!(n >= 1 && n <= 365)) throw new Error('Ingresá un número de días entre 1 y 365'); return n; },
+};
+
+export async function saveAjuste(clave, valor) {
+  const parse = AJUSTES[clave];
+  if (!parse) return { data: null, error: { message: `Ajuste no permitido: ${clave}` } };
+  let v;
+  try { v = parse(valor); } catch (e) { return { data: null, error: { message: e.message } }; }
+  return asAdmin((sb) => sb.from('ajustes').upsert({ clave, valor: v, updated_at: new Date().toISOString() }));
 }
