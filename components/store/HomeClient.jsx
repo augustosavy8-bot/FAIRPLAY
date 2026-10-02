@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { useStore } from './StoreProvider';
 import HeroCarousel from './HeroCarousel';
@@ -13,17 +12,21 @@ const PAGE = 24;
 
 export default function HomeClient({ heros, bannerCards }) {
   const { products, cats } = useStore();
-  const params = useSearchParams();
   const [cat, setCat] = useState('todos');
   const [gen, setGen] = useState('todos');
   const [limit, setLimit] = useState(PAGE);
   const catalogRef = useRef(null);
 
-  // Filtro por URL (?cat=) desde el buscador
+  // Filtro por URL (?cat=) desde el buscador. Se lee en el cliente para no perder el render del servidor.
   useEffect(() => {
-    const c = params.get('cat');
-    if (c) { setCat(c); setGen('todos'); setTimeout(scrollToCatalog, 60); }
-  }, [params]); // eslint-disable-line react-hooks/exhaustive-deps
+    const apply = () => {
+      const c = new URLSearchParams(window.location.search).get('cat');
+      if (c) { setCat(c); setGen('todos'); setTimeout(scrollToCatalog, 60); }
+    };
+    apply();
+    window.addEventListener('fp:cat', apply);
+    return () => window.removeEventListener('fp:cat', apply);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scrollToCatalog = () => {
     const el = catalogRef.current;

@@ -46,7 +46,7 @@ export default function SearchOverlay() {
             <p className="s-search-lbl">Categorías</p>
             <div className="s-chips-wrap">
               {cats.map((c) => (
-                <Link key={c.id} href={`/?cat=${encodeURIComponent(c.id)}#catalogo`} className="s-chip s-press" onClick={close}>
+                <Link key={c.id} href={`/?cat=${encodeURIComponent(c.id)}#catalogo`} className="s-chip s-press" onClick={() => { close(); setTimeout(() => window.dispatchEvent(new Event('fp:cat')), 80); }}>
                   {catLabel({ tipo: c.id }, cats)}
                 </Link>
               ))}
