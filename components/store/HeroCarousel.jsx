@@ -5,6 +5,15 @@ import { ChevronsRight } from 'lucide-react';
 const FALLBACK = [{ id: 'f', url_archivo: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80', tipo_archivo: 'image', titulo: 'Nueva colección', subtitulo: 'Indumentaria deportiva premium' }];
 const MQ_DESKTOP = '(min-width: 768px)';
 
+// Si el recorte es más ancho que la card (no respeta 2:3 / 40:21), se escala por altura ("cover")
+// para que la persona igual llegue a la franja superior y sobresalga. Si es más alto, "contain".
+function fitPop(e) {
+  const img = e.currentTarget;
+  if (!img.naturalWidth || !img.clientHeight) return;
+  const wider = img.naturalWidth / img.naturalHeight > img.clientWidth / img.clientHeight + 0.01;
+  img.dataset.fit = wider ? 'cover' : 'contain';
+}
+
 // Cards negras con radio 24, scroll-snap con "peek" de la siguiente, guion = activo.
 // Efecto 3D: si el slide tiene recorte (persona con fondo transparente), la card es 20% más alta
 // que el marco negro y el recorte ocupa toda la card, así la persona sobresale por arriba.
@@ -28,10 +37,13 @@ export default function HeroCarousel({ slides, onCta }) {
       });
       setIdx(best);
     };
-    fn();
+    // Los recortes pueden haber cargado antes de hidratar (onLoad no llega): ajustarlos acá y en cada resize
+    const fitAll = () => el.querySelectorAll('.s-hero-pop img').forEach((img) => img.complete && fitPop({ currentTarget: img }));
+    const onResize = () => { fn(); fitAll(); };
+    fn(); fitAll();
     el.addEventListener('scroll', fn, { passive: true });
-    window.addEventListener('resize', fn);
-    return () => { el.removeEventListener('scroll', fn); window.removeEventListener('resize', fn); };
+    window.addEventListener('resize', onResize);
+    return () => { el.removeEventListener('scroll', fn); window.removeEventListener('resize', onResize); };
   }, [list.length]);
 
   const go = (i) => {
@@ -65,7 +77,7 @@ export default function HeroCarousel({ slides, onCta }) {
                 <picture className="s-hero-pop" aria-hidden="true">
                   {/* srcset vacío no es válido: si falta una versión, esa breakpoint oculta el recorte por CSS */}
                   <source media={MQ_DESKTOP} srcSet={popD || popM} />
-                  <img src={popM || popD} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+                  <img src={popM || popD} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" onLoad={fitPop} />
                 </picture>
               )}
 
