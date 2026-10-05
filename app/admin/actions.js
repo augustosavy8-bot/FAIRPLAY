@@ -6,7 +6,7 @@ import { getAdmin } from '@/lib/auth';
 const COLUMNS = {
   productos:    ['nombre', 'tipo', 'categoria', 'talles_disponibles', 'imagen_url', 'fotos', 'descripcion', 'activo', 'precio', 'precio_anterior', 'destacado'],
   categorias:   ['id', 'label', 'icon', 'orden'],
-  hero_slides:  ['url_archivo', 'tipo_archivo', 'titulo', 'subtitulo', 'activo'],
+  hero_slides:  ['url_archivo', 'tipo_archivo', 'titulo', 'subtitulo', 'activo', 'url_archivo_mobile', 'url_recorte', 'url_recorte_mobile'],
   banner_cards: ['titulo', 'subtitulo', 'etiqueta', 'cta', 'imagen_url', 'bloque', 'orden', 'activo', 'categoria'],
   ticker_items: ['texto', 'activo', 'orden'],
 };

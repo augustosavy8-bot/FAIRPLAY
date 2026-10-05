@@ -48,7 +48,7 @@ public/               logo.png, LOGO_FOKO.png
 | Tabla | Columnas principales | Uso |
 |---|---|---|
 | `productos` | id uuid, slug (único, se genera al crear), nombre, categoria (género), tipo (id de categoría), talles_disponibles text[], imagen_url, fotos text[], descripcion, precio, precio_anterior, destacado, activo, created_at | Catálogo. Sin stock ni colores todavía |
-| `hero_slides` | id, url_archivo, tipo_archivo ('image'\|'video'), titulo, subtitulo, activo, created_at | Carrusel principal |
+| `hero_slides` | id, url_archivo (fondo desktop 16:7), url_archivo_mobile (4:5), url_recorte (persona transparente 40:21), url_recorte_mobile (2:3), tipo_archivo, titulo, subtitulo, activo | Carrusel principal. Con recorte: efecto 3D (la persona sobresale 20% arriba del marco) |
 | `categorias` | id text (slug), label, icon (emoji), orden, created_at | Chips de categorías |
 | `banner_cards` | id, titulo, subtitulo, etiqueta, cta, imagen_url, bloque, orden, activo, categoria, link_categoria, created_at | Tarjetas promocionales por bloque |
 | `ticker_items` | id, texto, activo, orden, created_at | Cinta de avisos |

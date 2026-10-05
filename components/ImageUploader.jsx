@@ -4,7 +4,7 @@ import { uploadImage } from '@/lib/upload';
 import { compressImage } from '@/lib/compress';
 import { Ic } from './Icons';
 
-export default function ImageUploader({ value, onChange, label = 'Subir imagen', bucket = 'imagenes' }) {
+export default function ImageUploader({ value, onChange, label = 'Subir imagen', bucket = 'imagenes', maxWidth = 1200 }) {
   const [over,    setOver]    = useState(false);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
@@ -19,7 +19,7 @@ export default function ImageUploader({ value, onChange, label = 'Subir imagen',
     setError(null);
 
     try {
-      const compressed = await compressImage(file);
+      const compressed = await compressImage(file, maxWidth);
       const url = await uploadImage(compressed, bucket);
       if (!url || url.startsWith('data:')) {
         throw new Error('uploadImage devolvió base64 en lugar de una URL de Storage');
