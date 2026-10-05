@@ -25,25 +25,26 @@ export default function HeroCarousel({ slides, onCta }) {
   useEffect(() => {
     const el = track.current;
     if (!el) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const fn = () => {
+    // Indicador activo: se calcula como mucho una vez por frame (el swipe dispara muchos eventos de scroll)
+    let raf = 0;
+    const update = () => {
+      raf = 0;
       const pad = parseFloat(getComputedStyle(el).paddingLeft) || 0;
       let best = 0, bestDist = Infinity;
       [...el.children].forEach((card, i) => {
-        const rel = (card.offsetLeft - el.offsetLeft - pad - el.scrollLeft) / (card.offsetWidth || 1);
-        if (Math.abs(rel) < bestDist) { bestDist = Math.abs(rel); best = i; }
-        // Parallax leve del recorte respecto del marco
-        if (!reduce) card.style.setProperty('--p', Math.max(-1, Math.min(1, rel)).toFixed(3));
+        const d = Math.abs(card.offsetLeft - el.offsetLeft - pad - el.scrollLeft);
+        if (d < bestDist) { bestDist = d; best = i; }
       });
       setIdx(best);
     };
-    // Los recortes pueden haber cargado antes de hidratar (onLoad no llega): ajustarlos acá y en cada resize
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    // Los recortes pueden haber cargado antes de hidratar (onLoad no llega): ajustarlos acá y al rotar/cambiar de tamaño
     const fitAll = () => el.querySelectorAll('.s-hero-pop img').forEach((img) => img.complete && fitPop({ currentTarget: img }));
-    const onResize = () => { fn(); fitAll(); };
-    fn(); fitAll();
-    el.addEventListener('scroll', fn, { passive: true });
+    const onResize = () => { onScroll(); fitAll(); };
+    update(); fitAll();
+    el.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
-    return () => { el.removeEventListener('scroll', fn); window.removeEventListener('resize', onResize); };
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize); };
   }, [list.length]);
 
   const go = (i) => {
