@@ -106,7 +106,12 @@
 .s-hero-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.25) 45%, rgba(0,0,0,0) 70%); }
 
 /* Recorte 3D: ocupa toda la card (marco + 20% superior), alineado abajo, sin capturar el swipe */
-.s-hero-pop { display: none; position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+/* clip-path: el recorte solo puede salir hacia ARRIBA; a los costados y abajo queda contenido en su card,
+   con las esquinas inferiores redondeadas igual que el marco (no invade la card vecina al deslizar) */
+.s-hero-pop {
+  display: none; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  clip-path: inset(0 0 0 0 round 0 0 var(--r-card) var(--r-card));
+}
 /* Sin transform ni filter: en mobile el repintado durante el swipe hacía titilar/correrse el recorte */
 .s-hero-pop img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
 .s-hero-pop img[data-fit="cover"] { object-fit: cover; }
