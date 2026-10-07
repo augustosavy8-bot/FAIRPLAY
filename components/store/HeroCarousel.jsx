@@ -68,7 +68,7 @@ export default function HeroCarousel({ slides, onCta }) {
                 ) : (
                   <picture>
                     {h.url_archivo_mobile && <source media="(max-width: 767px)" srcSet={h.url_archivo_mobile} />}
-                    <img src={h.url_archivo} alt="" fetchPriority={eager ? 'high' : 'auto'} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+                    <img src={h.url_archivo} alt="" fetchPriority={eager ? 'high' : 'low'} loading="eager" decoding="async" />
                   </picture>
                 )}
                 <div className="s-hero-shade" />
@@ -78,7 +78,8 @@ export default function HeroCarousel({ slides, onCta }) {
                 <picture className="s-hero-pop" aria-hidden="true">
                   {/* srcset vacío no es válido: si falta una versión, esa breakpoint oculta el recorte por CSS */}
                   <source media={MQ_DESKTOP} srcSet={popD || popM} />
-                  <img src={popM || popD} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" onLoad={fitPop} />
+                  {/* Todos eager: así el recorte del slide siguiente ya está cargado al deslizar */}
+                  <img src={popM || popD} alt="" loading="eager" fetchPriority={eager ? 'high' : 'low'} decoding={eager ? 'sync' : 'async'} onLoad={fitPop} />
                 </picture>
               )}
 

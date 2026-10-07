@@ -16,7 +16,7 @@ export default function Footer() {
         </div>
         <div className="s-footer-cr">
           <span>© {new Date().getFullYear()} Fair Play — Vida Deportiva</span>
-          <span className="s-footer-by">by <img src="/LOGO_FOKO.png" alt="Foko" /></span>
+          <span className="s-footer-by">by <img src="/LOGO_FOKO.png" alt="Foko" loading="lazy" /></span>
         </div>
       </div>
     </footer>
