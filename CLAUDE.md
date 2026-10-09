@@ -6,7 +6,7 @@ Dominio: https://www.fairplayvidadeportiva.com.ar · Repo: `augustosavy8-bot/FAI
 ## Stack
 - **Next.js 14 (App Router)**, React 18, **JSX sin TypeScript** (alias `@/*` → raíz, ver `jsconfig.json`).
 - **Supabase** (proyecto `fairplay`, ref `opuejtszcflwzccdwdsl`): Postgres + Storage (bucket público `imagenes`).
-- `@supabase/supabase-js` v2 + `@supabase/ssr`. Íconos de la tienda: `lucide-react`. Sin librería de UI ni Tailwind.
+- `@supabase/supabase-js` v2 + `@supabase/ssr`. Íconos de la tienda: `lucide-react`. Métricas: Vercel Analytics (`<Analytics />` solo en la tienda). Sin librería de UI ni Tailwind.
 
 ## Estructura
 ```

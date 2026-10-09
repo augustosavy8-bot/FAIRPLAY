@@ -7,6 +7,7 @@ import BottomNav from '@/components/store/BottomNav';
 import BagSheet from '@/components/store/BagSheet';
 import SearchOverlay from '@/components/store/SearchOverlay';
 import WhatsAppFab from '@/components/store/WhatsAppFab';
+import { Analytics } from '@vercel/analytics/next';
 import './tienda.css';
 
 export default async function TiendaLayout({ children }) {
@@ -26,6 +27,8 @@ export default async function TiendaLayout({ children }) {
         <BagSheet />
         <SearchOverlay />
       </div>
+      {/* Visitas y páginas vistas de la tienda (no se carga en /admin) */}
+      <Analytics />
     </StoreProvider>
   );
 }
